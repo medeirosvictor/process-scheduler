@@ -1,3 +1,27 @@
+# Process Scheduler
+Simulates a process scheduler (Operating Systems)
+Scheduler Algorithms
+ - Shortest Job First (SJF)
+ - Round Robin
+ - Priority Queue
+
+Maximum Ammount of CPU cores - 64
+Maximun Ammount of Processes - 200
+
+Process
+ - ID
+ - Total execution time (4, 20)seconds
+ - Status (Ready, Waiting, Executing)
+ - Remaining Process Time
+ - Priority
+
+Development Environment Setup
+ - npm install
+ - gulp watch (compiles SASS files)
+
+------------------------------------
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
