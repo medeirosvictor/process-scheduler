@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AlgorithmSelector from './AlgorithmSelector';
 import Process from './Process';
+import AddProcess from './AddProcess';
 
 class App extends Component {
     state = {
@@ -11,11 +12,23 @@ class App extends Component {
         ]
     }
 
+    randomIntFromInterval = (min,max) => {
+        return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
+    addProcess = (process) => {
+        let processes = [...this.state.processes, process];
+        this.setState({
+            processes: processes
+        });
+    }
+
   render() {
     return (
         <div className="App">
             <h1>Process Scheduler</h1>
             <AlgorithmSelector/>
+            <AddProcess addProcess={this.addProcess}/>
             <Process processes={this.state.processes}/>
         </div>
     );

@@ -4,13 +4,15 @@ class AlgorithmSelector extends Component {
     state = {
         algorithm: '',
         coreAmmount: 0,
-        processAmmount: 0
+        processAmmount: 0,
+        quantum: false
     }
 
     handleChange = (e) => {
         if (e.target.name === 'algorithm') {
             this.setState({
-                algorithm: e.target.value
+                algorithm: e.target.value,
+                quantum: (e.target.value === 'round-robin' ? true : false)
             });
         } else {
             this.setState({
@@ -29,18 +31,22 @@ class AlgorithmSelector extends Component {
             <div className="algorithm-selector">
                 <form onSubmit={this.handleSubmit}>
                     <div>
-                        <input type="radio" name="algorithm" id="sjf" value="sjf" required onChange={this.handleChange}/>
+                        <input type="radio" name="algorithm" id="sjf" value="sjf" required onChange={this.handleChange} />
                         <label htmlFor="sjf">Shortest Job First</label>
                     </div>
 
                     <div>
-                        <input type="radio" name="algorithm" id="round-robin" value="round-robin"/>
+                        <input type="radio" name="algorithm" id="round-robin" value="round-robin" onChange={this.handleChange} />
                         <label htmlFor="round-robin">Round Robin</label>
                     </div>
 
                     <div>
-                        <input type="radio" name="algorithm" id="priority-queue" value="priority-queue"/>
+                        <input type="radio" name="algorithm" id="priority-queue" value="priority-queue" onChange={this.handleChange} />
                         <label htmlFor="priority-queue">Priority Queue</label>
+                    </div>
+
+                    <div className={this.state.quantum ? '' : 'hide'}>
+                        <input type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.state.quantum ? true : false}/>
                     </div>
 
                     <div>
