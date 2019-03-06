@@ -8,13 +8,13 @@ var minify = require('gulp-minify');
 sass.compiler = require('node-sass');
 
 gulp.task('sass', function () {
-    return gulp.src('./public/sass/**/*.scss')
+    return gulp.src('./src/sass/**/*.scss')
         .pipe(sass().on('error', sass.logError))
         .pipe(concat('index.css'))
         .pipe(minify())
-        .pipe(gulp.dest('./public/css'));
+        .pipe(gulp.dest('./src/css'));
 });
 
 gulp.task('watch', function(){
-    return gulp.watch('./public/sass/**/*.scss', gulp.series('sass'));
+    return gulp.watch('./src/sass/**/*.scss', gulp.series('sass'));
 });

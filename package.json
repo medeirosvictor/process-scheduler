@@ -23,6 +23,11 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "jquery": "^3.3.1"
+    "gulp": "^4.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^3.1.0",
+    "gulp-sass": "^4.0.2",
+    "jquery": "^3.3.1",
+    "node-sass": "^4.11.0"
   }
 }

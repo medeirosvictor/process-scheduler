@@ -26,7 +26,7 @@ class App extends Component {
   render() {
     return (
         <div className="App">
-            <h1>Process Scheduler</h1>
+            <h1 className="header">Process Scheduler</h1>
             <AlgorithmSelector/>
             <AddProcess addProcess={this.addProcess}/>
             <Process processes={this.state.processes}/>
