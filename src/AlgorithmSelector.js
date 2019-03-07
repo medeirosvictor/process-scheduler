@@ -21,9 +21,37 @@ class AlgorithmSelector extends Component {
         }
     }
 
+    randomIntFromInterval = (min,max) => {
+        return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
+    generateProcessList = (processAmmount) => {
+        let processList = [];
+        for (let i = 0; i < processAmmount; i++) {
+            let totalExecutionTime = this.randomIntFromInterval(4, 20);
+            let priority = this.randomIntFromInterval(0, 3);
+            processList.push({id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority});
+        }
+
+        return processList;
+    }
+
+    generateCoreList = (coreAmmount) => {
+        let coreList = [];
+        for (let i = 0; i < coreAmmount; i++) {
+            coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: {}});
+        }
+
+        return coreList;
+    }
+
     handleSubmit = (e) => {
         e.preventDefault();
         console.log(this.state);
+        let processList = this.generateProcessList(this.state.processAmmount);
+        let coreList = this.generateCoreList(this.state.coreAmmount);
+        console.log(processList);
+        console.log(coreList);
     }
 
     render() {
@@ -32,7 +60,7 @@ class AlgorithmSelector extends Component {
                 <form onSubmit={this.handleSubmit}>
                     <div>
                         <input type="radio" name="algorithm" id="sjf" value="sjf" required onChange={this.handleChange} />
-                        <label htmlFor="sjf">Shortest Job First</label>
+                        <label htmlFor="sjf">Shortest Job First (SJF)</label>
                     </div>
 
                     <div>
