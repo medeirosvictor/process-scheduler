@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import Process from './Process';
 import Core from './Core';
 import AddProcess from './AddProcess';
+import { getAlgorithmData } from './Selector';
+import { connect } from 'react-redux';
+import {createPropsSelector} from 'reselect-immutable-helpers';
 
 class Scheduler extends Component {
     /** 
@@ -34,6 +37,7 @@ class Scheduler extends Component {
         return (
             <div>
                 Scheduler
+                {this.props.algorithmData.algorithm}
                 <AddProcess addProcess={this.addProcess}/>
                 <Core cores={this.state.cores} />
                 <Process processes={this.state.processes}/>
@@ -42,4 +46,8 @@ class Scheduler extends Component {
     }
 }
 
-export default Scheduler;
+const mapStateToProps = createPropsSelector({
+    algorithmData: getAlgorithmData
+})
+
+export default connect(mapStateToProps) (Scheduler);

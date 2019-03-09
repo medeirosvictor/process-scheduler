@@ -1,23 +1,32 @@
 import React, { Component } from 'react';
+import { receiveAlgorithmData } from './Actions'
+import { connect } from 'react-redux'
 
 class AlgorithmSelector extends Component {
-    state = {
-        algorithm: '',
-        coreAmmount: 0,
-        processAmmount: 0,
-        quantum: false
+    constructor(props) {
+        super(props);
+        this.state = {
+            algorithm: '',
+            coreAmmount: 0,
+            processAmmount: 0,
+            quantum: false
+        }
     }
 
     handleChange = (e) => {
         if (e.target.name === 'algorithm') {
-            this.setState({
-                algorithm: e.target.value,
-                quantum: (e.target.value === 'round-robin' ? true : false)
-            });
+            this.props.receiveAlgorithmData({
+                algorithmData: {
+                    algorithm: e.target.value,
+                    quantum: (e.target.value === 'round-robin' ? true : false)
+                }
+            })
         } else {
-            this.setState({
-                [e.target.id]: e.target.value
-            });
+            this.props.receiveAlgorithmData({
+                algorithmData: {
+                    [e.target.id]: e.target.value
+                }
+            })
         }
     }
 
@@ -92,4 +101,8 @@ class AlgorithmSelector extends Component {
     }
 }
 
-export default AlgorithmSelector;
+const mapDispatchToProps = {
+    receiveAlgorithmData
+}
+
+export default connect(undefined, mapDispatchToProps) (AlgorithmSelector);
