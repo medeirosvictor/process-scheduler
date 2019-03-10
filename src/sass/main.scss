@@ -28,4 +28,30 @@ code {
     .header {
         text-align: center;
     }
+
+    .process-scheduler-app {
+        .algorithm-selector {
+            display: flex;
+            justify-content: center;
+        }
+
+        .process-list {
+            display: flex;
+
+            .process {
+                border: 1px solid #acacac;
+                max-width: 200px;
+                padding: 5px;
+            }
+        }
+
+        .core-list {
+            margin-bottom:  20px;
+
+            .core {
+                max-width: 250px;
+                border: 1px solid #064be0;
+            }
+        }
+    }
 }

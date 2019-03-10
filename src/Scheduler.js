@@ -4,7 +4,7 @@ import Core from './Core';
 import AddProcess from './AddProcess';
 import { getAlgorithmData } from './Selector';
 import { connect } from 'react-redux';
-import {createPropsSelector} from 'reselect-immutable-helpers';
+import { createPropsSelector } from 'reselect-immutable-helpers';
 
 class Scheduler extends Component {
     /** 
@@ -14,6 +14,13 @@ class Scheduler extends Component {
     *  - List of Cores
     *  - List of Processes
     */
+
+    constructor(props) {
+        super(props);
+        if (this.props.algorithmData.algorithm === '') {
+            this.props.history.push('/')
+        }
+    }
 
     state = {
         processes: [
@@ -36,11 +43,15 @@ class Scheduler extends Component {
     render () {
         return (
             <div>
-                Scheduler
-                {this.props.algorithmData.algorithm}
+                <div>
+                    Scheduler Info
+                    <div>
+                        Algorithm: {this.props.algorithmData.algorithm}
+                    </div>
+                </div>
                 <AddProcess addProcess={this.addProcess}/>
-                <Core cores={this.state.cores} />
-                <Process processes={this.state.processes}/>
+                <Core cores={this.props.algorithmData.coreList} />
+                <Process processes={this.props.algorithmData.processList}/>
             </div>
         );
     }

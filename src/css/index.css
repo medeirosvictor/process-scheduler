@@ -19,3 +19,20 @@ code {
 
 .App .header {
   text-align: center; }
+
+.App .process-scheduler-app .algorithm-selector {
+  display: flex;
+  justify-content: center; }
+
+.App .process-scheduler-app .process-list {
+  display: flex; }
+  .App .process-scheduler-app .process-list .process {
+    border: 1px solid #acacac;
+    max-width: 200px;
+    padding: 5px; }
+
+.App .process-scheduler-app .core-list {
+  margin-bottom: 20px; }
+  .App .process-scheduler-app .core-list .core {
+    max-width: 250px;
+    border: 1px solid #064be0; }

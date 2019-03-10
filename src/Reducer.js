@@ -1,16 +1,18 @@
 import {handleActions} from 'redux-actions'
 import Immutable from 'immutable'
-import { receiveAlgorithmData } from './Actions'
+import { receiveAlgorithmData} from './Actions'
 
+//Initial state for data inside the Redux Store - for before event executions
 const initialState = Immutable.fromJS({
     algorithmData: {
         algorithm: '',
-        coreAmmount: 0,
-        processAmmount: 0,
+        coreList: [],
+        processList: [],
         quantum: false
     }
 })
 
+//Action configuration
 export default handleActions({
     [receiveAlgorithmData]: (state, {payload}) => state.mergeDeep(payload),
 }, initialState)

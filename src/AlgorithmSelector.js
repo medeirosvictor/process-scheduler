@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { receiveAlgorithmData } from './Actions'
 import { connect } from 'react-redux'
+import { getAlgorithmData } from './Selector'
+import { createPropsSelector } from 'reselect-immutable-helpers'
 
 class AlgorithmSelector extends Component {
     constructor(props) {
@@ -22,10 +24,8 @@ class AlgorithmSelector extends Component {
                 }
             })
         } else {
-            this.props.receiveAlgorithmData({
-                algorithmData: {
-                    [e.target.id]: e.target.value
-                }
+            this.setState({
+                [e.target.id]: e.target.value
             })
         }
     }
@@ -35,32 +35,38 @@ class AlgorithmSelector extends Component {
     }
 
     generateProcessList = (processAmmount) => {
-        let processList = [];
+        let processes = this.props.algorithmData.processList
         for (let i = 0; i < processAmmount; i++) {
             let totalExecutionTime = this.randomIntFromInterval(4, 20);
             let priority = this.randomIntFromInterval(0, 3);
-            processList.push({id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority});
+            let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority}
+            processes = [...processes, process];
         }
-
-        return processList;
+        this.props.receiveAlgorithmData({
+            algorithmData: {
+                processList: processes
+            }
+        })
     }
 
     generateCoreList = (coreAmmount) => {
         let coreList = [];
         for (let i = 0; i < coreAmmount; i++) {
-            coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: {}});
+            coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none'});
         }
 
-        return coreList;
+        this.props.receiveAlgorithmData({
+            algorithmData: {
+                coreList: coreList
+            }
+        })
     }
 
     handleSubmit = (e) => {
         e.preventDefault();
-        console.log(this.state);
-        let processList = this.generateProcessList(this.state.processAmmount);
-        let coreList = this.generateCoreList(this.state.coreAmmount);
-        console.log(processList);
-        console.log(coreList);
+        this.generateProcessList(this.state.processAmmount);
+        this.generateCoreList(this.state.coreAmmount);
+        this.props.history.push('/scheduler')
     }
 
     render() {
@@ -82,8 +88,8 @@ class AlgorithmSelector extends Component {
                         <label htmlFor="priority-queue">Priority Queue</label>
                     </div>
 
-                    <div className={this.state.quantum ? '' : 'hide'}>
-                        <input type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.state.quantum ? true : false}/>
+                    <div className={this.props.algorithmData.quantum ? '' : 'hide'}>
+                        <input type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.quantum ? true : false}/>
                     </div>
 
                     <div>
@@ -105,4 +111,8 @@ const mapDispatchToProps = {
     receiveAlgorithmData
 }
 
-export default connect(undefined, mapDispatchToProps) (AlgorithmSelector);
+const mapStateToProps = createPropsSelector({
+    algorithmData: getAlgorithmData
+})
+
+export default connect(mapStateToProps, mapDispatchToProps) (AlgorithmSelector);
