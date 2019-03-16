@@ -2,7 +2,7 @@ html,
 body {
     width: 100%;
     height: 100%;
-    background-color: #faf9fa;
+    background-color: #ebebeb;
 }
 
 * {
@@ -12,9 +12,7 @@ body {
 body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+    font-family:'Titillium Web', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -33,11 +31,12 @@ text-center {
 }
 
 .App {
-    max-width: 1024px;
+    max-width: 1248px;
     margin: 0 auto;
 
     .header {
         text-align: center;
+        letter-spacing: 0.1em;
     }
 
     .algorithm-selector {
@@ -71,15 +70,25 @@ text-center {
 
     .process-list {
         display: flex;
+        flex-wrap: wrap;
+        background-color: #fff;
+        padding: 5px;
 
         .process {
-            border: 1px solid #acacac;
-            max-width: 200px;
+            border: 1px solid #282c34;
+            min-width: 145px;
             padding: 5px;
+            margin: 3px;
+
+            &_name {
+                font-weight: bold;
+                font-size: 20px;
+                border-bottom: 1px solid #ebebeb;
+            }
 
             &.executing {
-                border-color: green;
                 font-weight: bold;
+                background-color: #eafafe;
             }
         }
     }
@@ -87,12 +96,26 @@ text-center {
     .core-list {
         margin: 20px 0;
         display: flex;
+        flex-wrap: wrap;
+        background-color: #fff;
+        padding: 5px;
 
         .core {
-            max-width: 250px;
-            border: 1px solid #064be0;
-            margin-right: 10px;
+            min-width: 200px;
+            border: 1px solid #282c34;
+            margin: 3px;
             padding: 5px;
+
+            &_name {
+                font-weight: bold;
+                border-bottom: 1px solid #ebebeb;
+                font-size: 20px;
+            }
+
+            &.executing {
+                background-color: #282c34;
+                color: #fff;
+            }
         }
     }
 }

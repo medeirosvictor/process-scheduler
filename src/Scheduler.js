@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import Process from './Process'
 import Core from './Core'
-import AddProcess from './AddProcess'
 import { getAlgorithmData } from './Selector'
 import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
@@ -68,18 +67,17 @@ class Scheduler extends Component {
                             if(processList[j].status === 'ready') {
                                 freeProcessId = processList[j].id
                                 processList[j].status = 'executing'
+                                if(freeProcessId >= 0) {
+                                    coreList[i].processInExecution = 'P' + freeProcessId
+                                    coreList[i].status = 'executing'
+                                    availableCores--
+                                } else {
+                                    coreList[i].processInExecution = 'none'
+                                    coreList[i].status = 'waiting for process'
+                                    availableCores++
+                                }
                                 break
                             } 
-                        }
-
-                        if(freeProcessId) {
-                            coreList[i].processInExecution = 'P' + freeProcessId
-                            coreList[i].status = 'executing'
-                            availableCores--
-                        } else {
-                            coreList[i].processInExecution = 'none'
-                            coreList[i].status = 'waiting for process'
-                            availableCores++
                         }
                     }
                 }
@@ -126,7 +124,6 @@ class Scheduler extends Component {
                     coreList: coreList,
                     processList: processList
                 })
-                // debugger;
                 this.algorithmSJF()
             } else {
                 alert("Process Scheduler has finished it's job")
@@ -138,8 +135,7 @@ class Scheduler extends Component {
     handleClick = (e) => {
         // eslint-disable-next-line
         let id = Math.max.apply(Math, this.state.processList.map(function(process) { return process.id; }));
-        debugger
-        let process = {id: id + 1, status: 'waiting', totalExecutionTime: 18, remainingExecutionTime: 2, priority: 3}
+        let process = {id: id + 1, status: 'ready', totalExecutionTime: 6, remainingExecutionTime: 2, priority: 3}
         let processList = [...this.state.processList, process]
         if (this.state.algorithm === 'sjf') {
             processList = sortList(processList, 'totalExecutionTime')
@@ -147,16 +143,25 @@ class Scheduler extends Component {
         this.setState({
             processList: processList
         })
-
     }
 
     render () {
         return (
             <div>
                 <div className="process-scheduler_info">
-                    <div>Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span></div>
-                    <button onClick={this.handleClick}></button>
-                    <AddProcess addProcess={this.addProcess}/>
+                    <div>
+                        Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span>
+                    </div>
+                    <div>
+                        PIE = Process In Execution
+                    </div>
+                    <div>
+                        TET = Total Execution Time
+                    </div>
+                    <div>
+                        RPT = Remaining Execution Time
+                    </div>
+                    <button onClick={this.handleClick}>Add Random Process</button>
                 </div>
                 <Core cores={this.state.coreList} />
                 <Process processes={this.state.processList}/>

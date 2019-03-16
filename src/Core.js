@@ -3,11 +3,11 @@ import React from 'react';
 const Core = ({cores}) => {
     const coreList = cores.map(core => {
         return (
-            <div className="core" key={"p" + core.id}
+            <div className={core.status === 'executing' ? 'core executing': 'core'} key={"p" + core.id}
             data-core-info={JSON.stringify(core)}>
-                <div>{core.name}</div>
+                <div className="core_name">{core.name}</div>
                 <div>Status: {core.status}</div>
-                <div>Process In Execution: {core.processInExecution}</div>
+                <div>PIE: {core.processInExecution}</div>
             </div>
         )
     });
