@@ -4,6 +4,9 @@ body {
   height: 100%;
   background-color: #faf9fa; }
 
+* {
+  box-sizing: border-box; }
+
 body {
   margin: 0;
   padding: 0;
@@ -17,22 +20,47 @@ code {
 .hide {
   display: none !important; }
 
-.App .header {
+text-center {
   text-align: center; }
 
-.App .process-scheduler-app .algorithm-selector {
-  display: flex;
-  justify-content: center; }
-
-.App .process-scheduler-app .process-list {
-  display: flex; }
-  .App .process-scheduler-app .process-list .process {
-    border: 1px solid #acacac;
-    max-width: 200px;
-    padding: 5px; }
-
-.App .process-scheduler-app .core-list {
-  margin-bottom: 20px; }
-  .App .process-scheduler-app .core-list .core {
-    max-width: 250px;
-    border: 1px solid #064be0; }
+.App {
+  max-width: 1024px;
+  margin: 0 auto; }
+  .App .header {
+    text-align: center; }
+  .App .algorithm-selector {
+    display: flex;
+    justify-content: center; }
+    .App .algorithm-selector_input {
+      width: 100%;
+      height: 25px;
+      margin: 3px 0;
+      padding: 3px; }
+    .App .algorithm-selector_button-submit {
+      width: 100%;
+      margin: 5px 0;
+      text-transform: uppercase;
+      padding: 7px;
+      background-color: #282c34;
+      border: 1px solid;
+      color: #f7f7f7; }
+  .App .process-scheduler_info {
+    display: flex;
+    justify-content: center; }
+  .App .process-list {
+    display: flex; }
+    .App .process-list .process {
+      border: 1px solid #acacac;
+      max-width: 200px;
+      padding: 5px; }
+      .App .process-list .process.executing {
+        border-color: green;
+        font-weight: bold; }
+  .App .core-list {
+    margin: 20px 0;
+    display: flex; }
+    .App .core-list .core {
+      max-width: 250px;
+      border: 1px solid #064be0;
+      margin-right: 10px;
+      padding: 5px; }

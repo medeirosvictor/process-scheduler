@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
-import Process from './Process';
-import Core from './Core';
-import AddProcess from './AddProcess';
-import { getAlgorithmData } from './Selector';
-import { connect } from 'react-redux';
-import { createPropsSelector } from 'reselect-immutable-helpers';
+import React, { Component } from 'react'
+import Process from './Process'
+import Core from './Core'
+import AddProcess from './AddProcess'
+import { getAlgorithmData } from './Selector'
+import { connect } from 'react-redux'
+import { createPropsSelector } from 'reselect-immutable-helpers'
+import { receiveAlgorithmData } from './Actions'
+import { sortList } from './HelperFunctions'
 
 class Scheduler extends Component {
     /** 
@@ -16,49 +18,159 @@ class Scheduler extends Component {
     */
 
     constructor(props) {
-        super(props);
+        super(props)
         if (this.props.algorithmData.algorithm === '') {
             this.props.history.push('/')
         }
+
+        this.state = this.props.algorithmData
     }
 
-    state = {
-        processes: [
-            {id: 1, status: 'waiting', totalExecutionTime: 8, remainingExecutionTime: 4, priority: 1},
-            {id: 2, status: 'waiting', totalExecutionTime: 20, remainingExecutionTime: 20, priority: 2},
-            {id: 3, status: 'waiting', totalExecutionTime: 18, remainingExecutionTime: 2, priority: 3}
-        ],
-        cores: [
-            {id: 1, name: 'Core 1', status: 'waiting for process', processInExecution: ''}
-        ]
+
+    componentDidMount() { 
+        let algorithm = this.state.algorithm
+        if(algorithm === 'sjf') {
+            console.log('Running SJF algorithm')
+            let processList = sortList(this.state.processList, 'totalExecutionTime')
+            this.setState({
+                processList: processList
+            })
+            this.algorithmSJF()
+        } else if(algorithm === 'round-robin') {
+            console.log('Running Round Robin algorithm')
+        } else if(algorithm === 'priority-queue') {
+            console.log('Running Priority Queue with Round Robin algorithm')
+        }
     }
 
-    addProcess = (process) => {
-        let processes = [...this.state.processes, process];
+    algorithmSJF() {
+        // Sort Processes on Shortest Job First
+        // Run the Algorithm
+
+        setTimeout(() => {
+            //is core empty ?
+            let availableCores = 0
+            let coreList = [...this.state.coreList]
+            for (let i = 0; i < coreList.length; i++) {
+                if(coreList[i].status === 'waiting for process') {
+                    availableCores++
+                }
+            }
+
+            if (this.state.processList.length) {
+                let freeProcessId
+                
+                let processList = this.state.processList
+
+                for (let i = 0; i < coreList.length; i++) {
+                    if(coreList[i].status === 'waiting for process' && availableCores > 0) {
+                        for (let j = 0; j < processList.length; j++) {
+                            if(processList[j].status === 'ready') {
+                                freeProcessId = processList[j].id
+                                processList[j].status = 'executing'
+                                break
+                            } 
+                        }
+
+                        if(freeProcessId) {
+                            coreList[i].processInExecution = 'P' + freeProcessId
+                            coreList[i].status = 'executing'
+                            availableCores--
+                        } else {
+                            coreList[i].processInExecution = 'none'
+                            coreList[i].status = 'waiting for process'
+                            availableCores++
+                        }
+                    }
+                }
+
+                //Remove 0 Remaining Time Process
+                let doneProcessID = []
+                for (let i = 0; i < processList.length; i++) {
+                    if(processList[i].remainingExecutionTime === 0) {
+                        doneProcessID.push(processList[i].id.toString())
+                    } 
+                }
+
+                if (doneProcessID.length) {
+                    for (let i = 0; i < coreList.length; i++) {
+                        if(coreList[i].status === 'executing' && doneProcessID.indexOf(coreList[i].processInExecution.substring(1)) > -1 ) {
+                            coreList[i].processInExecution = 'none'
+                            coreList[i].status = 'waiting for process'
+                            availableCores++
+                        }
+                    }
+                }
+                this.setState({
+                    coreList: coreList
+                })
+
+                processList = processList.filter(function(process) {
+                    if (process.remainingExecutionTime === 0) {
+                        doneProcessID = process.id
+                    }
+                    return process.remainingExecutionTime > 0
+                })
+                this.setState({
+                    processList: processList
+                })
+
+                // Updates Executing Processes
+                for (let i = 0; i < processList.length; i++) {
+                    if(processList[i].status === 'executing') {
+                        processList[i].remainingExecutionTime--
+                    }
+                }
+
+                this.setState({
+                    coreList: coreList,
+                    processList: processList
+                })
+                // debugger;
+                this.algorithmSJF()
+            } else {
+                alert("Process Scheduler has finished it's job")
+                this.props.history.push('/')
+            }
+        }, 1500)
+    }
+
+    handleClick = (e) => {
+        // eslint-disable-next-line
+        let id = Math.max.apply(Math, this.state.processList.map(function(process) { return process.id; }));
+        debugger
+        let process = {id: id + 1, status: 'waiting', totalExecutionTime: 18, remainingExecutionTime: 2, priority: 3}
+        let processList = [...this.state.processList, process]
+        if (this.state.algorithm === 'sjf') {
+            processList = sortList(processList, 'totalExecutionTime')
+        }
         this.setState({
-            processes: processes
-        });
+            processList: processList
+        })
+
     }
 
     render () {
         return (
             <div>
-                <div>
-                    Scheduler Info
-                    <div>
-                        Algorithm: {this.props.algorithmData.algorithm}
-                    </div>
+                <div className="process-scheduler_info">
+                    <div>Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span></div>
+                    <button onClick={this.handleClick}></button>
+                    <AddProcess addProcess={this.addProcess}/>
                 </div>
-                <AddProcess addProcess={this.addProcess}/>
-                <Core cores={this.props.algorithmData.coreList} />
-                <Process processes={this.props.algorithmData.processList}/>
+                <Core cores={this.state.coreList} />
+                <Process processes={this.state.processList}/>
             </div>
-        );
+        )
     }
+}
+
+const mapDispatchToProps = {
+    receiveAlgorithmData
 }
 
 const mapStateToProps = createPropsSelector({
     algorithmData: getAlgorithmData
 })
 
-export default connect(mapStateToProps) (Scheduler);
+export default connect(mapStateToProps, mapDispatchToProps) (Scheduler)

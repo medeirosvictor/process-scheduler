@@ -3,9 +3,9 @@ import React from 'react';
 const Processes = ({processes}) => {
     const processList = processes.map(process => {
         return (
-            <div className="process" key={"p" + process.id}
+            <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}
             data-process-info={JSON.stringify(process)}>
-                <div>Process: {"P" + process.id}</div>
+                <div>{"P" + process.id}</div>
                 <div>Status: {process.status}</div>
                 <div>Total execution time: {process.totalExecutionTime}</div>
                 <div>Remaining Process time: {process.remainingExecutionTime}</div>

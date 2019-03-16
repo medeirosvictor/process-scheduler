@@ -20,7 +20,7 @@ class AlgorithmSelector extends Component {
             this.props.receiveAlgorithmData({
                 algorithmData: {
                     algorithm: e.target.value,
-                    quantum: (e.target.value === 'round-robin' ? true : false)
+                    quantum: (e.target.value === 'round-robin' || e.target.value === 'priority-queue' ? true : false)
                 }
             })
         } else {
@@ -85,22 +85,22 @@ class AlgorithmSelector extends Component {
 
                     <div>
                         <input type="radio" name="algorithm" id="priority-queue" value="priority-queue" onChange={this.handleChange} />
-                        <label htmlFor="priority-queue">Priority Queue</label>
+                        <label htmlFor="priority-queue">Priority Queue w/ Round Robin</label>
                     </div>
 
                     <div className={this.props.algorithmData.quantum ? '' : 'hide'}>
-                        <input type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.quantum ? true : false}/>
+                        <input className="algorithm-selector_input " type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.quantum ? true : false}/>
                     </div>
 
                     <div>
-                        <input type="number" name="core-ammount" id="coreAmmount" max="64" placeholder="Core Ammount" onChange={this.handleChange} required/>
+                        <input className="algorithm-selector_input input-field" type="number" name="core-ammount" id="coreAmmount" max="64" placeholder="Core Ammount" onChange={this.handleChange} required/>
                     </div>
 
                     <div>
-                        <input type="number" name="process-ammount" id="processAmmount" max="200" placeholder="Process Ammount" onChange={this.handleChange} required/>
+                        <input className="algorithm-selector_input" type="number" name="process-ammount" id="processAmmount" max="200" placeholder="Process Ammount" onChange={this.handleChange} required/>
                     </div>
 
-                    <button type="submit">Start Scheduler Simulation</button>
+                    <button className="algorithm-selector_button-submit" type="submit">Start Scheduler Simulation</button>
                 </form>
             </div>
         )

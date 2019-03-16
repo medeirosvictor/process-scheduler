@@ -5,7 +5,7 @@ const Core = ({cores}) => {
         return (
             <div className="core" key={"p" + core.id}
             data-core-info={JSON.stringify(core)}>
-                <div>Core Name: {core.name}</div>
+                <div>{core.name}</div>
                 <div>Status: {core.status}</div>
                 <div>Process In Execution: {core.processInExecution}</div>
             </div>
