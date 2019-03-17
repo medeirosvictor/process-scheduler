@@ -2,7 +2,7 @@ html,
 body {
     width: 100%;
     height: 100%;
-    background-color: #ebebeb;
+    background-color: #f6f8fa;
 }
 
 * {
@@ -43,28 +43,41 @@ text-center {
         display: flex;
         justify-content: center;
 
+        form {
+            padding: 25px;
+            background-color: #fff;
+        }
+
         &_input {
             width: 100%;
             height: 25px;
             margin: 3px 0;
             padding: 3px;
         }
+    }
 
-        &_button-submit {
-            width: 100%;
-            margin: 5px 0;
-            text-transform: uppercase;
-            padding: 7px;
-            background-color: #282c34;
-            border: 1px solid;
-            color: #f7f7f7;
-        }
+    .algorithm-selector_button-submit,
+    .add-process-button {
+        width: 100%;
+        margin: 5px 0;
+        text-transform: uppercase;
+        padding: 7px;
+        background-color: #282c34;
+        border: 1px solid;
+        color: #f7f7f7;
+        font-family: 'Titillium Web', sans-serif;
+        font-weight: bold;
+    }
+
+    .add-process-button {
+        background-color: #ca6f07;
     }
 
     .process-scheduler {
         &_info {
-            display: flex;
-            justify-content: center;
+            max-width: 250px;
+            margin: 0 auto;
+            width: 100%;
         }
     }
 
@@ -73,6 +86,7 @@ text-center {
         flex-wrap: wrap;
         background-color: #fff;
         padding: 5px;
+        border: 1px solid #d1d5da;
 
         .process {
             border: 1px solid #282c34;
@@ -88,7 +102,7 @@ text-center {
 
             &.executing {
                 font-weight: bold;
-                background-color: #eafafe;
+                background-color: #d3ffd5;
             }
         }
     }
@@ -99,6 +113,7 @@ text-center {
         flex-wrap: wrap;
         background-color: #fff;
         padding: 5px;
+        border: 1px solid #d1d5da;
 
         .core {
             min-width: 200px;

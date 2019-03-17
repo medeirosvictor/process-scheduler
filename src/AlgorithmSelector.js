@@ -3,6 +3,7 @@ import { receiveAlgorithmData } from './Actions'
 import { connect } from 'react-redux'
 import { getAlgorithmData } from './Selector'
 import { createPropsSelector } from 'reselect-immutable-helpers'
+import { randomIntFromInterval } from './HelperFunctions'
 
 class AlgorithmSelector extends Component {
     constructor(props) {
@@ -11,7 +12,7 @@ class AlgorithmSelector extends Component {
             algorithm: '',
             coreAmmount: 0,
             processAmmount: 0,
-            quantum: false
+            quantum: 0
         }
     }
 
@@ -19,10 +20,19 @@ class AlgorithmSelector extends Component {
         if (e.target.name === 'algorithm') {
             this.props.receiveAlgorithmData({
                 algorithmData: {
-                    algorithm: e.target.value,
-                    quantum: (e.target.value === 'round-robin' || e.target.value === 'priority-queue' ? true : false)
+                    algorithm: e.target.value
                 }
             })
+        } else if (e.target.name === 'quantum'){
+            this.props.receiveAlgorithmData({
+                algorithmData: {
+                    quantum: Number.parseInt(e.target.value)
+                }
+            })
+            this.setState({
+                [e.target.id]: e.target.value
+            })
+
         } else {
             this.setState({
                 [e.target.id]: e.target.value
@@ -30,15 +40,11 @@ class AlgorithmSelector extends Component {
         }
     }
 
-    randomIntFromInterval = (min,max) => {
-        return Math.floor(Math.random()*(max-min+1)+min);
-    }
-
     generateProcessList = (processAmmount) => {
         let processes = this.props.algorithmData.processList
         for (let i = 0; i < processAmmount; i++) {
-            let totalExecutionTime = this.randomIntFromInterval(4, 20);
-            let priority = this.randomIntFromInterval(0, 3);
+            let totalExecutionTime = randomIntFromInterval(4, 20);
+            let priority = randomIntFromInterval(0, 3);
             let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority}
             processes = [...processes, process];
         }
@@ -52,7 +58,11 @@ class AlgorithmSelector extends Component {
     generateCoreList = (coreAmmount) => {
         let coreList = [];
         for (let i = 0; i < coreAmmount; i++) {
-            coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none'});
+            if (this.state.algorithm === 'sjf') {
+                coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none'});
+            } else {
+                coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none', currentQuantum: this.state.quantum});
+            }
         }
 
         this.props.receiveAlgorithmData({
@@ -88,8 +98,8 @@ class AlgorithmSelector extends Component {
                         <label htmlFor="priority-queue">Priority Queue w/ Round Robin</label>
                     </div>
 
-                    <div className={this.props.algorithmData.quantum ? '' : 'hide'}>
-                        <input className="algorithm-selector_input " type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.quantum ? true : false}/>
+                    <div className={this.props.algorithmData.algorithm === 'round-robin' || this.props.algorithmData.algorithm === 'priority-queue' ? '' : 'hide'}>
+                        <input className="algorithm-selector_input " type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.algorithm === 'round-robin' || this.props.algorithmData.algorithm === 'priority-queue' ? true : false}/>
                     </div>
 
                     <div>

@@ -16,7 +16,7 @@ const Processes = ({processes}) => {
 
     return (
         <div className="process-list">
-            { processList }
+            { processList.length ? processList : <div className="process-list_no-process">No Process left to execute!</div>}
         </div>
     )
 }

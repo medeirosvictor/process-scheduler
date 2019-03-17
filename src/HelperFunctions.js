@@ -1,3 +1,18 @@
+export function randomIntFromInterval(min,max) {
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+export function getAvailableCoreAmmount(coreList) {
+    let availableCores = 0
+    for (let i = 0; i < coreList.length; i++) {
+        if(coreList[i].status === 'waiting for process') {
+            availableCores++
+        }
+    }
+
+    return availableCores
+}
+
 export function sortList(arr, key) {
     let getKey = prop(key)
 
