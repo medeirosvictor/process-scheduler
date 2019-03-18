@@ -8,7 +8,7 @@ const Core = ({cores}) => {
                 <div className="core_name">{core.name}</div>
                 <div>Status: {core.status}</div>
                 <div>PIE: {core.processInExecution}</div>
-                <div className={'currentQuantum' in core ? '' : 'hide'}>Current Quantum: {core.currentQuantum}s</div>
+                <div className={core.currentQuantum >= 0 ? '' : 'hide'}>Current Quantum: {core.currentQuantum}s</div>
             </div>
         )
     });

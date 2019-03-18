@@ -75,6 +75,10 @@ text-center {
       .App .process-list .process.executing {
         font-weight: bold;
         background-color: #d3ffd5; }
+      .App .process-list .process .inserted {
+        color: #ca6f07; }
+      .App .process-list .process-queue-priority {
+        width: 100%; }
   .App .core-list {
     margin: 20px 0;
     display: flex;

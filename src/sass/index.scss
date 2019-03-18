@@ -104,6 +104,14 @@ text-center {
                 font-weight: bold;
                 background-color: #d3ffd5;
             }
+
+            & .inserted {
+                color: #ca6f07;
+            }
+
+            &-queue-priority {
+                width: 100%;
+            }
         }
     }
 

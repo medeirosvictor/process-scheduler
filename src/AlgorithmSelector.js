@@ -3,7 +3,7 @@ import { receiveAlgorithmData } from './Actions'
 import { connect } from 'react-redux'
 import { getAlgorithmData } from './Selector'
 import { createPropsSelector } from 'reselect-immutable-helpers'
-import { randomIntFromInterval } from './HelperFunctions'
+import { randomIntFromInterval, sortPriorityQueues } from './HelperFunctions'
 
 class AlgorithmSelector extends Component {
     constructor(props) {
@@ -12,7 +12,7 @@ class AlgorithmSelector extends Component {
             algorithm: '',
             coreAmmount: 0,
             processAmmount: 0,
-            quantum: 0
+            quantum: -1
         }
     }
 
@@ -48,6 +48,10 @@ class AlgorithmSelector extends Component {
             let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority}
             processes = [...processes, process];
         }
+        if (this.props.algorithmData.algorithm === 'priority-queue') {
+            processes = sortPriorityQueues(processes)
+        }
+
         this.props.receiveAlgorithmData({
             algorithmData: {
                 processList: processes
