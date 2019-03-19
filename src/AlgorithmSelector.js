@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { receiveAlgorithmData } from './Actions'
+import { receiveAlgorithmData, resetAlgorithmData  } from './Actions'
 import { connect } from 'react-redux'
 import { getAlgorithmData } from './Selector'
 import { createPropsSelector } from 'reselect-immutable-helpers'
@@ -14,6 +14,8 @@ class AlgorithmSelector extends Component {
             processAmmount: 0,
             quantum: -1
         }
+
+        props.resetAlgorithmData()
     }
 
     handleChange = (e) => {
@@ -125,7 +127,8 @@ class AlgorithmSelector extends Component {
 }
 
 const mapDispatchToProps = {
-    receiveAlgorithmData
+    receiveAlgorithmData,
+    resetAlgorithmData
 }
 
 const mapStateToProps = createPropsSelector({
