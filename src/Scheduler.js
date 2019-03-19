@@ -38,7 +38,7 @@ class Scheduler extends Component {
         } else if(algorithm === 'round-robin') {
             this.algorithmRoundRobin()
         } else if(algorithm === 'priority-queue') {
-            // this.algorithmPriorityQueueRoundRobin()
+            this.algorithmPriorityQueueRoundRobin()
         }
     }
 
