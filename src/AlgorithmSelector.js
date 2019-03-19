@@ -64,7 +64,10 @@ class AlgorithmSelector extends Component {
         for (let i = 0; i < coreAmmount; i++) {
             if (this.state.algorithm === 'sjf') {
                 coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none'});
-            } else {
+            } else if(this.state.algorithm === 'priority-queue') {
+                coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none', currentQuantum: this.state.quantum, currentPriority: -1});
+            }
+            else {
                 coreList.push({id: i, name: 'Core '+i, status: 'waiting for process', processInExecution: 'none', currentQuantum: this.state.quantum});
             }
         }

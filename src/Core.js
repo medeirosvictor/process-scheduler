@@ -8,6 +8,7 @@ const Core = ({cores}) => {
                 <div className="core_name">{core.name}</div>
                 <div>Status: {core.status}</div>
                 <div>PIE: {core.processInExecution}</div>
+                <div className={core.currentPriority >= 0 ? '' : 'hide'}>Current Priority: {core.currentPriority}</div>
                 <div className={core.currentQuantum >= 0 ? '' : 'hide'}>Current Quantum: {core.currentQuantum}s</div>
             </div>
         )

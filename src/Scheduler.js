@@ -242,7 +242,7 @@ class Scheduler extends Component {
                         if (processListQ[j].length) {
                             // Going through column
                             for (let k = 0; k < processListQ[j].length; k++) {
-                                if (processListQ[j][k].status === 'ready'){
+                                if (processListQ[j][k].status === 'ready' && processListQ[j][k].priority > this.state.lastPriorityAdded){
                                     let coreIndex = getAvailableCore(coreList)
                                     if (coreIndex >= 0) {
                                         let freeProcessId = processListQ[j][k].id
@@ -250,12 +250,33 @@ class Scheduler extends Component {
                                         if(freeProcessId >= 0) {
                                             coreList[coreIndex].processInExecution = 'P' + freeProcessId
                                             coreList[coreIndex].status = 'executing'
-                                            coreList[coreIndex].quantum = this.state.quantum
+                                            let priorityQuantum
+                                            if (processListQ[j][k].priority === 0) {
+                                                priorityQuantum = this.state.quantum * 4
+                                            } else if (processListQ[j][k].priority === 1) {
+                                                priorityQuantum = this.state.quantum * 3
+                                            } else if (processListQ[j][k].priority === 2) {
+                                                priorityQuantum = this.state.quantum * 2
+                                            } else if (processListQ[j][k].priority === 3) {
+                                                priorityQuantum = this.state.quantum
+                                            }
+                                            coreList[coreIndex].currentQuantum = priorityQuantum.toString()
+                                            coreList[coreIndex].currentPriority = processListQ[j][k].priority
                                             availableCores--
+                                            if (processListQ[j][k].priority === 3) {
+                                                this.setState({
+                                                    lastPriorityAdded: -1
+                                                })
+                                            } else {
+                                                this.setState({
+                                                    lastPriorityAdded: processListQ[j][k].priority
+                                                })
+                                            }
                                         } else {
                                             coreList[coreIndex].processInExecution = 'none'
                                             coreList[coreIndex].status = 'waiting for process'
                                             coreList[coreIndex].quantum = this.state.quantum
+                                            coreList[coreIndex].currentPriority = -1
                                             availableCores++
                                         }
                                         isRunnableProcess = getAvailableProcessAmmount(processListQ)[1]
@@ -290,6 +311,7 @@ class Scheduler extends Component {
                             coreList[i].processInExecution = 'none'
                             coreList[i].status = 'waiting for process'
                             coreList[i].currentQuantum = this.state.quantum
+                            coreList[i].currentPriority = -1
                             availableCores++
                         }
                     }
@@ -322,6 +344,7 @@ class Scheduler extends Component {
                         coreList[i].processInExecution = 'none'
                         coreList[i].status = 'waiting for process'
                         coreList[i].currentQuantum = this.state.quantum
+                        coreList[i].currentPriority = -1
                         availableCores++
                         processListQ[notFinishedProcessPriority] = processListQ[notFinishedProcessPriority].filter(function(process) {
                             return process.id.toString() !== runningProcessId
@@ -403,6 +426,7 @@ class Scheduler extends Component {
                     <div>
                         RET = Remaining Execution Time
                     </div>
+                    {this.state.algorithm === 'priority-queue' ? <div>Priorities and Quantums(Q) = (0 = 4 * Q, 1 =  3*Q, 2 = 2*Q, 3 = Q)<div>Quantum Submited (Initial Q) = {this.state.quantum}s</div></div> : <div></div>}
                     <button className="add-process-button" onClick={this.handleClick}>Add Random Process</button>
                 </div>
                 <Core cores={this.state.coreList} />

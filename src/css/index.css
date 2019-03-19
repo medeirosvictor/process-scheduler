@@ -54,7 +54,7 @@ text-center {
   .App .add-process-button {
     background-color: #ca6f07; }
   .App .process-scheduler_info {
-    max-width: 250px;
+    max-width: 400px;
     margin: 0 auto;
     width: 100%; }
   .App .process-list {
@@ -62,7 +62,8 @@ text-center {
     flex-wrap: wrap;
     background-color: #fff;
     padding: 5px;
-    border: 1px solid #d1d5da; }
+    border: 1px solid #d1d5da;
+    margin: 10px 0; }
     .App .process-list .process {
       border: 1px solid #282c34;
       min-width: 145px;
