@@ -5,7 +5,7 @@ import Core from './Core'
 import { getAlgorithmData } from './Selector'
 import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
-import { receiveAlgorithmData } from './Actions'
+import { receiveAlgorithmData, algorithmSJF } from './Actions'
 import { sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
 
 class Scheduler extends Component {
@@ -30,90 +30,12 @@ class Scheduler extends Component {
     componentDidMount() { 
         let algorithm = this.state.algorithm
         if(algorithm === 'sjf') {
-            let sortedProcessList = sortList(this.state.processList, 'totalExecutionTime')
-            this.setState({
-                processList: sortedProcessList
-            })
-            this.algorithmSJF()
+            this.props.algorithmSJF(this.props.algorithmData.coreList, this.props.algorithmData.processList, true)
         } else if(algorithm === 'round-robin') {
             this.algorithmRoundRobin()
         } else if(algorithm === 'priority-queue') {
             this.algorithmPriorityQueueRoundRobin()
         }
-    }
-
-    algorithmSJF() {
-        setTimeout(() => {
-
-            let coreList = this.state.coreList
-            let processList = this.state.processList
-
-            let availableCores = getAvailableCoreAmmount(coreList)
-
-            //Keep running until empty process list
-            if (processList) {
-
-                // Allocating Process to Cores
-                for (let i = 0; i < coreList.length; i++) {
-                    if(coreList[i].status === 'waiting for process' && availableCores > 0) {
-                        for (let j = 0; j < processList.length; j++) {
-                            if(processList[j].status === 'ready') {
-                                let freeProcessId = processList[j].id
-                                processList[j].status = 'executing'
-                                if(freeProcessId >= 0) {
-                                    coreList[i].processInExecution = 'P' + freeProcessId
-                                    coreList[i].status = 'executing'
-                                    availableCores--
-                                } else {
-                                    coreList[i].processInExecution = 'none'
-                                    coreList[i].status = 'waiting for process'
-                                    availableCores++
-                                }
-                                break
-                            } 
-                        }
-                    }
-                }
-
-                //Remove 0 Remaining Time Process
-                for (let i = 0; i < coreList.length; i++) {
-                        let runningProcessId = coreList[i].processInExecution.substring(1)
-                        if (runningProcessId !== 'none'.substring(1)) {
-                            let currentProcess = processList.find(process => process.id.toString() === runningProcessId)
-                            if(currentProcess.remainingExecutionTime === 0) {
-                                coreList[i].processInExecution = 'none'
-                                coreList[i].status = 'waiting for process'
-                                availableCores++
-                            }
-                        }
-                    }
-
-                processList = processList.filter(function(process) {
-                    return process.remainingExecutionTime > 0
-                })
-
-                this.setState({
-                    coreList: coreList,
-                    processList: processList
-                })
-
-                // Updates Executing Processes
-                for (let i = 0; i < processList.length; i++) {
-                    if(processList[i].status === 'executing') {
-                        processList[i].remainingExecutionTime--
-                    }
-                }
-
-                this.setState({
-                    coreList: coreList,
-                    processList: processList
-                })
-                this.algorithmSJF()
-            } else {
-                alert("Process Scheduler has finished it's job")
-                this.props.history.push('/')
-            }
-        }, 1000)
     }
 
     algorithmRoundRobin() {
@@ -192,10 +114,6 @@ class Scheduler extends Component {
                         processList = [...processList, notFinishedProcess]
                     }
                 }
-                this.setState({
-                    coreList: coreList,
-                    processList: processList
-                })
 
                 // Updates Executing Processes
                 for (let i = 0; i < processList.length; i++) {
@@ -251,27 +169,23 @@ class Scheduler extends Component {
                                             coreList[coreIndex].processInExecution = 'P' + freeProcessId
                                             coreList[coreIndex].status = 'executing'
                                             let priorityQuantum
+                                            const {quantum} = this.state
                                             if (processListQ[j][k].priority === 0) {
-                                                priorityQuantum = this.state.quantum * 4
+                                                priorityQuantum = quantum * 4
                                             } else if (processListQ[j][k].priority === 1) {
-                                                priorityQuantum = this.state.quantum * 3
+                                                priorityQuantum = quantum * 3
                                             } else if (processListQ[j][k].priority === 2) {
-                                                priorityQuantum = this.state.quantum * 2
+                                                priorityQuantum = quantum * 2
                                             } else if (processListQ[j][k].priority === 3) {
-                                                priorityQuantum = this.state.quantum
+                                                priorityQuantum = quantum
                                             }
                                             coreList[coreIndex].currentQuantum = priorityQuantum.toString()
                                             coreList[coreIndex].currentPriority = processListQ[j][k].priority
                                             availableCores--
-                                            if (processListQ[j][k].priority === 3) {
-                                                this.setState({
-                                                    lastPriorityAdded: -1
-                                                })
-                                            } else {
-                                                this.setState({
-                                                    lastPriorityAdded: processListQ[j][k].priority
-                                                })
-                                            }
+
+                                            this.setState({
+                                                lastPriorityAdded: processListQ[j][k].priority === 3 ? -1 : processListQ[j][k].priority
+                                            })
                                         } else {
                                             coreList[coreIndex].processInExecution = 'none'
                                             coreList[coreIndex].status = 'waiting for process'
@@ -411,11 +325,12 @@ class Scheduler extends Component {
     }
 
     render () {
+        const {algorithm, coreList, processList, quantum} = this.props.algorithmData
         return (
             <div>
                 <div className="process-scheduler_info">
                     <div>
-                        Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span>
+                        Running Algorithm: <span className="process-scheduler_info-algorithm">{algorithm}</span>
                     </div>
                     <div>
                         PIE = Process In Execution
@@ -426,18 +341,19 @@ class Scheduler extends Component {
                     <div>
                         RET = Remaining Execution Time
                     </div>
-                    {this.state.algorithm === 'priority-queue' ? <div>Priorities and Quantums(Q) = (0 = 4 * Q, 1 =  3*Q, 2 = 2*Q, 3 = Q)<div>Quantum Submited (Initial Q) = {this.state.quantum}s</div></div> : <div></div>}
+                    {algorithm === 'priority-queue' ? <div>Priorities and Quantums(Q) = (0 = 4 * Q, 1 =  3*Q, 2 = 2*Q, 3 = Q)<div>Quantum Submited (Initial Q) = {quantum}s</div></div> : <div></div>}
                     <button className="add-process-button" onClick={this.handleClick}>Add Random Process</button>
                 </div>
-                <Core cores={this.state.coreList} />
-                {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
+                <Core cores={coreList} />
+                {algorithm === 'priority-queue' ? <ProcessQueues processes={processList}/> : <Process processes={processList}/>}
             </div>
         )
     }
 }
 
 const mapDispatchToProps = {
-    receiveAlgorithmData
+    receiveAlgorithmData,
+    algorithmSJF
 }
 
 const mapStateToProps = createPropsSelector({
