@@ -52,7 +52,7 @@ text-center {
     font-family: 'Titillium Web', sans-serif;
     font-weight: bold; }
   .App .add-process-button {
-    background-color: #ca6f07; }
+    background-color: #d37000; }
   .App .process-scheduler_info {
     max-width: 400px;
     margin: 0 auto;
@@ -64,11 +64,18 @@ text-center {
     padding: 5px;
     border: 1px solid #d1d5da;
     margin: 10px 0; }
+    .App .process-list .process-queue-priority {
+      font-weight: bold;
+      font-size: 20px;
+      color: #6e00fd; }
     .App .process-list .process {
       border: 1px solid #282c34;
       min-width: 145px;
       padding: 5px;
       margin: 3px; }
+      @media screen and (max-width: 465px) {
+        .App .process-list .process {
+          flex: 1; } }
       .App .process-list .process_name {
         font-weight: bold;
         font-size: 20px;
@@ -92,6 +99,9 @@ text-center {
       border: 1px solid #282c34;
       margin: 3px;
       padding: 5px; }
+      @media screen and (max-width: 465px) {
+        .App .core-list .core {
+          flex: 1; } }
       .App .core-list .core_name {
         font-weight: bold;
         border-bottom: 1px solid #ebebeb;

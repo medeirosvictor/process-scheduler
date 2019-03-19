@@ -9,7 +9,6 @@ const Processes = ({processes}) => {
                 <div>Status: {process.status}</div>
                 <div>TET: {process.totalExecutionTime}s</div>
                 <div>RET: {process.remainingExecutionTime}s</div>
-                <div>Priority: {process.priority}</div>
             </div>
         )
     });
