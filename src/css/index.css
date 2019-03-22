@@ -76,6 +76,9 @@ text-center {
       @media screen and (max-width: 465px) {
         .App .process-list .process {
           flex: 1; } }
+      .App .process-list .process.finished {
+        background-color: #ebebeb;
+        border-color: #d3ffd5; }
       .App .process-list .process_name {
         font-weight: bold;
         font-size: 20px;

@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Process from './Process'
 import ProcessQueues from './ProcessQueues'
 import Core from './Core'
+import FinishedProcessList from './FinishedProcessList'
 import { getAlgorithmData } from './Selector'
 import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
@@ -24,6 +25,7 @@ class Scheduler extends Component {
         }
 
         this.state = this.props.algorithmData
+        this.state.finishedProcessList = []
     }
 
 
@@ -47,6 +49,7 @@ class Scheduler extends Component {
 
             let coreList = this.state.coreList
             let processList = this.state.processList
+            let finishedProcessList = this.state.finishedProcessList
 
             let availableCores = getAvailableCoreAmmount(coreList)
 
@@ -63,10 +66,12 @@ class Scheduler extends Component {
                                 if(freeProcessId >= 0) {
                                     coreList[i].processInExecution = 'P' + freeProcessId
                                     coreList[i].status = 'executing'
+                                    coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
                                     availableCores--
                                 } else {
                                     coreList[i].processInExecution = 'none'
                                     coreList[i].status = 'waiting for process'
+                                    coreList[i].processInExecutionRemainingTime = -1
                                     availableCores++
                                 }
                                 break
@@ -83,18 +88,30 @@ class Scheduler extends Component {
                             if(currentProcess.remainingExecutionTime === 0) {
                                 coreList[i].processInExecution = 'none'
                                 coreList[i].status = 'waiting for process'
+                                coreList[i].processInExecutionRemainingTime = -1
                                 availableCores++
                             }
                         }
                     }
+
+                let currentFinishedProcesses = processList.filter(function(process) {
+                    return process.remainingExecutionTime === 0
+                })
+                currentFinishedProcesses = currentFinishedProcesses.map(function(process){
+                    process.status = 'finished'
+                    return process
+                })
+
+                Array.prototype.push.apply(finishedProcessList, currentFinishedProcesses)
 
                 processList = processList.filter(function(process) {
                     return process.remainingExecutionTime > 0
                 })
 
                 this.setState({
-                    coreList: coreList,
-                    processList: processList
+                    coreList,
+                    processList,
+                    finishedProcessList
                 })
 
                 // Updates Executing Processes
@@ -104,14 +121,22 @@ class Scheduler extends Component {
                     }
                 }
 
+                // Updates Quantum on working Cores
+                for (let i = 0; i < coreList.length; i++) {
+                    if(coreList[i].status === 'executing') {
+                        coreList[i].processInExecutionRemainingTime--
+                    }
+                }
+
                 this.setState({
                     coreList: coreList,
                     processList: processList
                 })
                 this.algorithmSJF()
             } else {
-                alert("Process Scheduler has finished it's job")
-                this.props.history.push('/')
+                setTimeout(() => {
+                    this.props.history.push('/')
+                }, 10000)
             }
         }, 1000)
     }
@@ -121,6 +146,7 @@ class Scheduler extends Component {
 
             let coreList = [...this.state.coreList]
             let processList = [...this.state.processList]
+            let finishedProcessList = this.state.finishedProcessList
 
             let availableCores = getAvailableCoreAmmount(coreList)
 
@@ -138,6 +164,7 @@ class Scheduler extends Component {
                                     coreList[i].processInExecution = 'P' + freeProcessId
                                     coreList[i].status = 'executing'
                                     coreList[i].quantum = this.state.quantum
+                                    coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
                                     availableCores--
                                     this.setState({
                                         coreList: coreList,
@@ -147,6 +174,7 @@ class Scheduler extends Component {
                                     coreList[i].processInExecution = 'none'
                                     coreList[i].status = 'waiting for process'
                                     coreList[i].quantum = this.state.quantum
+                                    coreList[i].processInExecutionRemainingTime = -1
                                     availableCores++
                                 }
                                 break
@@ -168,10 +196,23 @@ class Scheduler extends Component {
                             coreList[i].processInExecution = 'none'
                             coreList[i].status = 'waiting for process'
                             coreList[i].currentQuantum = this.state.quantum
+                            coreList[i].processInExecutionRemainingTime = -1
                             availableCores++
                         }
                     }
                 }
+
+                let currentFinishedProcesses = processList.filter(function(process) {
+                    return process.remainingExecutionTime === 0
+                })
+
+                currentFinishedProcesses = currentFinishedProcesses.map(function(process){
+                    process.status = 'finished'
+                    return process
+                })
+
+                Array.prototype.push.apply(finishedProcessList, currentFinishedProcesses)
+
                 processList = processList.filter(function(process) {
                     return process.remainingExecutionTime > 0
                 })
@@ -193,8 +234,9 @@ class Scheduler extends Component {
                     }
                 }
                 this.setState({
-                    coreList: coreList,
-                    processList: processList
+                    coreList,
+                    processList,
+                    finishedProcessList
                 })
 
                 // Updates Executing Processes
@@ -203,10 +245,12 @@ class Scheduler extends Component {
                         processList[i].remainingExecutionTime--
                     }
                 }
+
                 // Updates Quantum on working Cores
                 for (let i = 0; i < coreList.length; i++) {
                     if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
                         coreList[i].currentQuantum--
+                        coreList[i].processInExecutionRemainingTime--
                     }
                 }
 
@@ -216,8 +260,9 @@ class Scheduler extends Component {
                 })
                 this.algorithmRoundRobin()
             } else {
-                alert("Process Scheduler has finished it's job")
-                this.props.history.push('/')
+                setTimeout(() => {
+                    this.props.history.push('/')
+                }, 10000)
             }
         }, 1000)
     }
@@ -227,6 +272,7 @@ class Scheduler extends Component {
 
             let coreList = [...this.state.coreList]
             let processListQ = this.state.processList
+            let finishedProcessList = this.state.finishedProcessList
 
             let processListQLength = processListQ.length
 
@@ -262,6 +308,7 @@ class Scheduler extends Component {
                                             }
                                             coreList[coreIndex].currentQuantum = priorityQuantum.toString()
                                             coreList[coreIndex].currentPriority = processListQ[j][k].priority
+                                            coreList[coreIndex].processInExecutionRemainingTime = processListQ[j][k].remainingExecutionTime
                                             availableCores--
                                             if (processListQ[j][k].priority === 3) {
                                                 this.setState({
@@ -277,6 +324,7 @@ class Scheduler extends Component {
                                             coreList[coreIndex].status = 'waiting for process'
                                             coreList[coreIndex].quantum = this.state.quantum
                                             coreList[coreIndex].currentPriority = -1
+                                            coreList[coreIndex].processInExecutionRemainingTime = -1
                                             availableCores++
                                         }
                                         isRunnableProcess = getAvailableProcessAmmount(processListQ)[1]
@@ -311,20 +359,38 @@ class Scheduler extends Component {
                             coreList[i].processInExecution = 'none'
                             coreList[i].status = 'waiting for process'
                             coreList[i].currentQuantum = this.state.quantum
+                            coreList[i].processInExecutionRemainingTime = -1
                             coreList[i].currentPriority = -1
                             availableCores++
                         }
                     }
                 }
 
+                for (let i = 0; i < processListQ.length; i++) {
+                    let currentFinishedProcesses = processListQ[i].filter(function(process) {
+                        return process.remainingExecutionTime === 0
+                    })
+
+                    currentFinishedProcesses = currentFinishedProcesses.map(function(process){
+                        process.status = 'finished'
+                        return process
+                    })
+
+                    Array.prototype.push.apply(finishedProcessList, currentFinishedProcesses)
+                }
+
+
+
                 for(let i =0; i < processListQ.length; i++) {
                     processListQ[i] = processListQ[i].filter(function(process) {
                         return process.remainingExecutionTime > 0
                     })
                 }
+
                 this.setState({
-                    coreList: coreList,
-                    processList: processListQ
+                    coreList,
+                    processListQ,
+                    finishedProcessList
                 })
 
                 // Remove process w/ core quantum === 0 but w/ Remaining Time to Execute > 0
@@ -371,6 +437,7 @@ class Scheduler extends Component {
                 for (let i = 0; i < coreList.length; i++) {
                     if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
                         coreList[i].currentQuantum--
+                        coreList[i].processInExecutionRemainingTime--
                     }
                 }
 
@@ -431,6 +498,9 @@ class Scheduler extends Component {
                 </div>
                 <Core cores={this.state.coreList} />
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
+                <div>
+                    <FinishedProcessList processes={this.state.finishedProcessList}/>
+                </div>
             </div>
         )
     }

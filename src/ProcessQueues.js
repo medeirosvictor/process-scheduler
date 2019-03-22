@@ -15,7 +15,6 @@ const Processes = ({processes}) => {
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
-                        <div>RET: {process.remainingExecutionTime}s</div>
                         <div>Priority: {process.priority}</div>
                     </div>
                 )
@@ -28,7 +27,6 @@ const Processes = ({processes}) => {
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
-                        <div>RET: {process.remainingExecutionTime}s</div>
                         <div>Priority: {process.priority}</div>
                     </div>
                 )
@@ -41,7 +39,6 @@ const Processes = ({processes}) => {
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
-                        <div>RET: {process.remainingExecutionTime}s</div>
                         <div>Priority: {process.priority}</div>
                     </div>
                 )
@@ -54,7 +51,6 @@ const Processes = ({processes}) => {
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
-                        <div>RET: {process.remainingExecutionTime}s</div>
                         <div>Priority: {process.priority}</div>
                     </div>
                 )

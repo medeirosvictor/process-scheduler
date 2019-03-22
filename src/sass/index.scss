@@ -105,6 +105,11 @@ text-center {
                 flex: 1;
             }
 
+            &.finished {
+                background-color: #ebebeb;
+                border-color: #d3ffd5;
+            }
+
             &_name {
                 font-weight: bold;
                 font-size: 20px;
