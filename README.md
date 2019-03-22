@@ -27,3 +27,6 @@ Core
 Development Environment Setup
  - npm install
  - gulp watch (compiles SASS files)
+
+To run the project
+ - npm start
