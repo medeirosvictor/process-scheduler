@@ -12,7 +12,8 @@ class AlgorithmSelector extends Component {
             algorithm: '',
             coreAmmount: 0,
             processAmmount: 0,
-            quantum: -1
+            quantum: -1,
+            algorithmMemoryManager: ''
         }
 
         props.resetAlgorithmData()
@@ -117,6 +118,17 @@ class AlgorithmSelector extends Component {
 
                     <div>
                         <input className="algorithm-selector_input" type="number" name="process-ammount" id="processAmmount" max="200" placeholder="Process Ammount" onChange={this.handleChange} required/>
+                    </div>
+
+                    <div className={this.props.algorithmData.algorithm === 'round-robin' ? '' : 'hide'}>
+                        <div>
+                            <input type="radio" name="algorithmMemoryManager" id="bestFit" value="bestFit" required onChange={this.handleChange} />
+                            <label htmlFor="bestFit">Best Fit</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="algorithmMemoryManager" id="mergeFit" value="mergeFit" required onChange={this.handleChange} />
+                            <label htmlFor="mergeFit">Merge Fit</label>
+                        </div>
                     </div>
 
                     <button className="algorithm-selector_button-submit" type="submit">Start Scheduler Simulation</button>

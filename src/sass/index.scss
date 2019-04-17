@@ -158,6 +158,11 @@ text-center {
             &.executing {
                 background-color: #282c34;
                 color: #fff;
+
+                .core_process-ret {
+                    color: black;
+                    background-color: #d3ffd5;
+                }
             }
         }
     }

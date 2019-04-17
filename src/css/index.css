@@ -112,3 +112,6 @@ text-center {
       .App .core-list .core.executing {
         background-color: #282c34;
         color: #fff; }
+        .App .core-list .core.executing .core_process-ret {
+          color: black;
+          background-color: #d3ffd5; }

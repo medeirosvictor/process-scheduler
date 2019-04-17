@@ -9,7 +9,8 @@ const initialState = Immutable.fromJS({
         coreList: [],
         processList: [],
         quantum: false,
-        lastPriorityAdded: -1
+        lastPriorityAdded: -1,
+        algorithmMemoryManager: ''
     }
 })
 
