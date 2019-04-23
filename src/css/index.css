@@ -115,3 +115,21 @@ text-center {
         .App .core-list .core.executing .core_process-ret {
           color: black;
           background-color: #d3ffd5; }
+  .App .memory {
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #fff;
+    padding: 5px;
+    border: 1px solid #d1d5da;
+    min-height: 69px; }
+    .App .memory-initial {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .App .memory-block {
+      border: 1px solid gray;
+      background-color: #56e6e8;
+      padding: 3px; }
+      .App .memory-block_container {
+        display: flex; }

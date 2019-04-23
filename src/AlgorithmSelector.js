@@ -13,7 +13,8 @@ class AlgorithmSelector extends Component {
             coreAmmount: 0,
             processAmmount: 0,
             quantum: -1,
-            algorithmMemoryManager: ''
+            algorithmMemoryManager: '',
+            freeMemoryBlocks: []
         }
 
         props.resetAlgorithmData()
@@ -36,7 +37,21 @@ class AlgorithmSelector extends Component {
                 [e.target.id]: e.target.value
             })
 
+        } else if (e.target.name === 'algorithmMemoryManager') {
+            this.props.receiveAlgorithmData({
+                algorithmData: {
+                    algorithmMemoryManager: e.target.value
+                }
+            })
+            this.setState({
+                algorithmMemoryManager: e.target.value
+            })
         } else {
+            this.props.receiveAlgorithmData({
+                algorithmData: {
+                    [e.target.id]: e.target.value
+                }
+            })
             this.setState({
                 [e.target.id]: e.target.value
             })
@@ -46,9 +61,10 @@ class AlgorithmSelector extends Component {
     generateProcessList = (processAmmount) => {
         let processes = this.props.algorithmData.processList
         for (let i = 0; i < processAmmount; i++) {
-            let totalExecutionTime = randomIntFromInterval(4, 20);
-            let priority = randomIntFromInterval(0, 3);
-            let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority}
+            let totalExecutionTime = randomIntFromInterval(10, 30)
+            let priority = randomIntFromInterval(0, 3)
+            let bytesToExecute = randomIntFromInterval(32, 1024)
+            let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, bytes: bytesToExecute}
             processes = [...processes, process];
         }
         if (this.props.algorithmData.algorithm === 'priority-queue') {
@@ -82,10 +98,20 @@ class AlgorithmSelector extends Component {
         })
     }
 
+    generateMemoryAllocation = (memoryAmmount) => {
+        this.props.receiveAlgorithmData({
+            algorithmData: {
+                initialMemoryAvailability: Number.parseInt(memoryAmmount),
+                memoryBlocksList: Number.parseInt(memoryAmmount)
+            }
+        })
+    }
+
     handleSubmit = (e) => {
         e.preventDefault();
-        this.generateProcessList(this.state.processAmmount);
-        this.generateCoreList(this.state.coreAmmount);
+        this.generateProcessList(this.state.processAmmount)
+        this.generateCoreList(this.state.coreAmmount)
+        this.generateMemoryAllocation(this.state.memoryAmmount)
         this.props.history.push('/scheduler')
     }
 
@@ -122,11 +148,14 @@ class AlgorithmSelector extends Component {
 
                     <div className={this.props.algorithmData.algorithm === 'round-robin' ? '' : 'hide'}>
                         <div>
-                            <input type="radio" name="algorithmMemoryManager" id="bestFit" value="bestFit" required onChange={this.handleChange} />
+                            <input className="algorithm-selector_input input-field" type="number" name="memoryAmmount" id="memoryAmmount" placeholder="Memory Ammount" onChange={this.handleChange} required={this.props.algorithmData.algorithm === 'round-robin' ? true : false}/>
+                        </div>
+                        <div>
+                            <input type="radio" name="algorithmMemoryManager" id="bestFit" value="bestFit" required={this.props.algorithmData.algorithm === 'round-robin' ? true : false} onChange={this.handleChange} />
                             <label htmlFor="bestFit">Best Fit</label>
                         </div>
                         <div>
-                            <input type="radio" name="algorithmMemoryManager" id="mergeFit" value="mergeFit" required onChange={this.handleChange} />
+                            <input type="radio" name="algorithmMemoryManager" id="mergeFit" value="mergeFit" required={this.props.algorithmData.algorithm === 'round-robin' ? true : false} onChange={this.handleChange} />
                             <label htmlFor="mergeFit">Merge Fit</label>
                         </div>
                     </div>

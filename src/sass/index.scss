@@ -166,4 +166,30 @@ text-center {
             }
         }
     }
+
+    .memory {
+        margin: 20px 0;
+        display: flex;
+        flex-wrap: wrap;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #d1d5da;
+        min-height: 69px;
+
+        &-initial {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        &-block {
+            border: 1px solid gray;
+            background-color: #56e6e8;
+            padding: 3px;
+
+            &_container {
+                display: flex;
+            }
+        }
+    }
 }

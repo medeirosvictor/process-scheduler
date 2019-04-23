@@ -8,6 +8,7 @@ import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
 import { receiveAlgorithmData } from './Actions'
 import { sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
+import Memory from './Memory';
 
 class Scheduler extends Component {
     /** 
@@ -133,6 +134,7 @@ class Scheduler extends Component {
                     processList: processList
                 })
                 this.algorithmSJF()
+                debugger;
             } else {
                 setTimeout(() => {
                     this.props.history.push('/')
@@ -146,6 +148,10 @@ class Scheduler extends Component {
 
             let coreList = [...this.state.coreList]
             let processList = [...this.state.processList]
+            let freeMemoryBlocks = [...this.state.freeMemoryBlocks]
+            let busyMemoryBlocks = [...this.state.busyMemoryBlocks]
+            let memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
+            let initialMemoryAvailability = this.state.initialMemoryAvailability
             let finishedProcessList = this.state.finishedProcessList
 
             let availableCores = getAvailableCoreAmmount(coreList)
@@ -159,25 +165,67 @@ class Scheduler extends Component {
                         for (let j = 0; j < processList.length; j++) {
                             if(processList[j].status === 'ready') {
                                 let freeProcessId = processList[j].id
-                                processList[j].status = 'executing'
-                                if(freeProcessId >= 0) {
+
+                                // Best Fit
+                                if (initialMemoryAvailability > 0 && processList[j].bytes <= initialMemoryAvailability) {
+                                    initialMemoryAvailability -= processList[j].bytes
+                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes}]
+                                    memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
+                                    processList[j].status = 'executing'
                                     coreList[i].processInExecution = 'P' + freeProcessId
                                     coreList[i].status = 'executing'
                                     coreList[i].quantum = this.state.quantum
                                     coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
                                     availableCores--
                                     this.setState({
-                                        coreList: coreList,
-                                        processList: processList
+                                        coreList,
+                                        processList,
+                                        busyMemoryBlocks,
+                                        memoryBlocksList,
+                                        initialMemoryAvailability
                                     })
+                                    break
                                 } else {
-                                    coreList[i].processInExecution = 'none'
-                                    coreList[i].status = 'waiting for process'
-                                    coreList[i].quantum = this.state.quantum
-                                    coreList[i].processInExecutionRemainingTime = -1
-                                    availableCores++
+                                    for (let k = 0; k < freeMemoryBlocks.length; k++) {
+                                        if (processList[j].bytes <= freeMemoryBlocks[k].size) {
+                                            if(freeProcessId >= 0) {
+                                                busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes}]
+                                                freeMemoryBlocks = [...freeMemoryBlocks, {id: freeMemoryBlocks.length, size: freeMemoryBlocks[k].size - processList[j].bytes}]
+                                                processList[j].status = 'executing'
+                                                coreList[i].processInExecution = 'P' + freeProcessId
+                                                coreList[i].status = 'executing'
+                                                coreList[i].quantum = this.state.quantum
+                                                coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
+                                                availableCores--
+                                                memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
+                                                this.setState({
+                                                    coreList,
+                                                    processList,
+                                                    freeMemoryBlocks,
+                                                    busyMemoryBlocks,
+                                                    memoryBlocksList
+                                                })
+                                                debugger
+                                            } else {
+                                                coreList[i].processInExecution = 'none'
+                                                coreList[i].status = 'waiting for process'
+                                                coreList[i].quantum = this.state.quantum
+                                                coreList[i].processInExecutionRemainingTime = -1
+                                                availableCores++
+                                            }
+                                            break
+                                        } else {
+                                            //add to aborted list
+                                            processList = processList.filter(function(process) {
+                                                return process.id !== freeProcessId
+                                            })
+                                            this.setState({
+                                                processList: processList
+                                            })
+                                            j = -1
+                                        }
+                                    }
                                 }
-                                break
                             }
                         }
                     }
@@ -259,6 +307,7 @@ class Scheduler extends Component {
                     processList: processList
                 })
                 this.algorithmRoundRobin()
+                debugger
             } else {
                 setTimeout(() => {
                     this.props.history.push('/')
@@ -456,10 +505,11 @@ class Scheduler extends Component {
         // eslint-disable-next-line
         let totalExecutionTime = randomIntFromInterval(4, 20);
         let priority = randomIntFromInterval(0, 3);
+        let bytesToExecute = randomIntFromInterval(32, 1024)
         let processList = this.state.processList
         if (this.state.algorithm !== 'priority-queue') {
             let id = Math.max.apply(Math, this.state.processList.map(function(process) { return process.id; }));
-            let newProcess = {id: id + 1, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, inserted: true}
+            let newProcess = {id: id + 1, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, inserted: true, bytes: bytesToExecute}
             processList = [...this.state.processList, newProcess]
             if (this.state.algorithm === 'sjf') {
                 processList = sortList(processList, 'totalExecutionTime')
@@ -469,7 +519,7 @@ class Scheduler extends Component {
             })
         } else {
             let maxId = getMaxIdFromProcessList(this.state.processList) + 1
-            let newProcess = {id: maxId, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, inserted: true}
+            let newProcess = {id: maxId, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, inserted: true, bytes: bytesToExecute}
             processList[priority].push(newProcess)
             this.setState({
                 processList: processList
@@ -498,6 +548,12 @@ class Scheduler extends Component {
                 </div>
                 <Core cores={this.state.coreList} />
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
+
+                <div className="memory">
+                    <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
+                    {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes</div> : <div className="hide"></div>}
+                </div>
+
                 <div>
                     <FinishedProcessList processes={this.state.finishedProcessList}/>
                 </div>

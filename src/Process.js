@@ -8,6 +8,7 @@ const Processes = ({processes}) => {
                 <div>Status: {process.status}</div>
                 <div>TET: {process.totalExecutionTime}s</div>
                 <div>RET: {process.remainingExecutionTime}s</div>
+                <div className={process.bytes ? '' : 'hide'}>Size: {process.bytes} bytes</div>
             </div>
         )
     });
