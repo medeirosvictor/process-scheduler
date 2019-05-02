@@ -7,6 +7,7 @@ const AbortedProcessList = ({processes}) => {
                 <div className='finished'>{"P" + process.id}</div>
                 <div>Status: {process.status}</div>
                 <div>TET: {process.totalExecutionTime}s</div>
+                <div>Size: {process.bytes} bytes</div>
             </div>
         )
     });
