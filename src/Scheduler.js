@@ -873,7 +873,7 @@ class Scheduler extends Component {
 
                 <div className="memory">
                     <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
-                    {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes</div> : <div className="hide"></div>}
+                    {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes not allocated</div> : <div className="hide"></div>}
                 </div>
 
                 <div>

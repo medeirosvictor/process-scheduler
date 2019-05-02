@@ -140,3 +140,6 @@ text-center {
         color: midnightblue; }
       .App .memory-block_container {
         display: flex; }
+    .App .memory-initial {
+      border: 1px solid gray;
+      padding: 3px; }

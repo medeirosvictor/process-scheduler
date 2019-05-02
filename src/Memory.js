@@ -5,6 +5,7 @@ const Memory = ({memoryBlocks}) => {
         if (memoryBlock.size) {
             return (
                 <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'}>
+                    <div>Block ID: {memoryBlock.id }</div>
                     <div>Block PID: {memoryBlock.type === 'free' ? 'free' : 'P' + memoryBlock.pid }</div>
                     <div>Size: { memoryBlock.size } bytes</div>
                     <div>Request Size: { memoryBlock.reqsize } bytes</div>
