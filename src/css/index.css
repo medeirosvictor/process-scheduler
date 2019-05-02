@@ -79,6 +79,8 @@ text-center {
       .App .process-list .process.finished {
         background-color: #ebebeb;
         border-color: #d3ffd5; }
+        .App .process-list .process.finished.aborted {
+          color: crimson; }
       .App .process-list .process_name {
         font-weight: bold;
         font-size: 20px;
@@ -131,5 +133,10 @@ text-center {
       border: 1px solid gray;
       background-color: #56e6e8;
       padding: 3px; }
+      .App .memory-block.free {
+        background-color: white;
+        color: black; }
+      .App .memory-block.busy {
+        color: midnightblue; }
       .App .memory-block_container {
         display: flex; }

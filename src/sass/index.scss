@@ -108,6 +108,10 @@ text-center {
             &.finished {
                 background-color: #ebebeb;
                 border-color: #d3ffd5;
+                
+                &.aborted {
+                    color: crimson;
+                }
             }
 
             &_name {
@@ -186,6 +190,15 @@ text-center {
             border: 1px solid gray;
             background-color: #56e6e8;
             padding: 3px;
+
+            &.free {
+                background-color: white;
+                color: black;
+            }
+
+            &.busy {
+                color: midnightblue;
+            }
 
             &_container {
                 display: flex;

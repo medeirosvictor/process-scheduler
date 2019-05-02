@@ -4,9 +4,10 @@ const Memory = ({memoryBlocks}) => {
     const memoryBlocksList = memoryBlocks.slice(0).reverse().map(memoryBlock => {
         if (memoryBlock.size) {
             return (
-                <div className='memory-block'>
-                    <div>Block ID: { memoryBlock.id }</div>
+                <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'}>
+                    <div>Block PID: {memoryBlock.type === 'free' ? 'free' : 'P' + memoryBlock.pid }</div>
                     <div>Size: { memoryBlock.size } bytes</div>
+                    <div>Request Size: { memoryBlock.reqsize } bytes</div>
                 </div>
             )
         }

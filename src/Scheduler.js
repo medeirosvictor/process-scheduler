@@ -3,6 +3,7 @@ import Process from './Process'
 import ProcessQueues from './ProcessQueues'
 import Core from './Core'
 import FinishedProcessList from './FinishedProcessList'
+import AbortedProcessList from './AbortedProcessList'
 import { getAlgorithmData } from './Selector'
 import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
@@ -27,6 +28,7 @@ class Scheduler extends Component {
 
         this.state = this.props.algorithmData
         this.state.finishedProcessList = []
+        this.state.abortedProcessList = []
     }
 
 
@@ -39,7 +41,11 @@ class Scheduler extends Component {
             })
             this.algorithmSJF()
         } else if(algorithm === 'round-robin') {
-            this.algorithmRoundRobin()
+            if (this.state.algorithmMemoryManager === 'bestFit') {
+                this.algorithmRoundRobinBestFit()
+            } else {
+                this.algorithmRoundRobinMergeFit()
+            }
         } else if(algorithm === 'priority-queue') {
             this.algorithmPriorityQueueRoundRobin()
         }
@@ -143,16 +149,17 @@ class Scheduler extends Component {
         }, 1000)
     }
 
-    algorithmRoundRobin() {
+    algorithmRoundRobinBestFit() {
         setTimeout(() => {
 
             let coreList = [...this.state.coreList]
             let processList = [...this.state.processList]
             let freeMemoryBlocks = [...this.state.freeMemoryBlocks]
             let busyMemoryBlocks = [...this.state.busyMemoryBlocks]
-            let memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
+            let memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
             let initialMemoryAvailability = this.state.initialMemoryAvailability
             let finishedProcessList = this.state.finishedProcessList
+            let abortedProcessList = this.state.abortedProcessList
 
             let availableCores = getAvailableCoreAmmount(coreList)
 
@@ -167,37 +174,70 @@ class Scheduler extends Component {
                                 let freeProcessId = processList[j].id
 
                                 // Best Fit
-                                if (initialMemoryAvailability > 0 && processList[j].bytes <= initialMemoryAvailability) {
+
+                                //Initial start case, no blocks free yet
+                                let busyBlock = busyMemoryBlocks.filter(function(block) {
+                                    return block.pid === freeProcessId
+                                })
+                                if (initialMemoryAvailability > 0 && processList[j].bytes <= initialMemoryAvailability && busyBlock.length === 0) {
                                     initialMemoryAvailability -= processList[j].bytes
-                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes}]
-                                    memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
-                                    processList[j].status = 'executing'
-                                    coreList[i].processInExecution = 'P' + freeProcessId
-                                    coreList[i].status = 'executing'
-                                    coreList[i].quantum = this.state.quantum
-                                    coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
+                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
+                                    memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+                                    this.startProcessExecution(freeProcessId, i, j)
                                     availableCores--
                                     this.setState({
-                                        coreList,
-                                        processList,
                                         busyMemoryBlocks,
                                         memoryBlocksList,
                                         initialMemoryAvailability
                                     })
                                     break
-                                } else {
-                                    for (let k = 0; k < freeMemoryBlocks.length; k++) {
-                                        if (processList[j].bytes <= freeMemoryBlocks[k].size) {
+                                }
+                                //Already allocated blocks case
+                                else {
+                                    if (busyBlock.length){
+                                        availableCores--
+                                        this.startProcessExecution(freeProcessId, i, j)
+                                        this.setState({
+                                            coreList,
+                                            processList,
+                                            busyMemoryBlocks,
+                                            memoryBlocksList,
+                                            initialMemoryAvailability
+                                        })
+                                        break
+                                    }
+                                    if (freeMemoryBlocks.length) {
+                                        let coreTracker = availableCores
+
+                                        // Find best available block
+                                        let minSize = processList[j].bytes + 1
+                                        let minSizeBlock
+                                        for (let k = 0; k < freeMemoryBlocks.length; k++) {
+                                            if(processList[j].bytes <= freeMemoryBlocks[k].size) {
+                                                let aux = freeMemoryBlocks[k].size - processList[j].bytes
+                                                if (aux < minSize) {
+                                                    minSize = aux
+                                                    minSizeBlock = freeMemoryBlocks[k]
+                                                }
+                                            }
+                                        }
+                                        if (minSizeBlock) {
                                             if(freeProcessId >= 0) {
-                                                busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes}]
-                                                freeMemoryBlocks = [...freeMemoryBlocks, {id: freeMemoryBlocks.length, size: freeMemoryBlocks[k].size - processList[j].bytes}]
+                                                minSizeBlock.pid = freeProcessId
+                                                minSizeBlock.type = 'busy'
+                                                minSizeBlock.reqsize = processList[j].bytes
+                                                busyMemoryBlocks = [...busyMemoryBlocks, minSizeBlock]
+                                                // eslint-disable-next-line
+                                                freeMemoryBlocks = freeMemoryBlocks.filter(function(block) {
+                                                    return block.id !== minSizeBlock.id
+                                                })
                                                 processList[j].status = 'executing'
                                                 coreList[i].processInExecution = 'P' + freeProcessId
                                                 coreList[i].status = 'executing'
                                                 coreList[i].quantum = this.state.quantum
                                                 coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
                                                 availableCores--
-                                                memoryBlocksList = [...busyMemoryBlocks, freeMemoryBlocks]
+                                                memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
                                                 this.setState({
                                                     coreList,
                                                     processList,
@@ -214,7 +254,8 @@ class Scheduler extends Component {
                                                 availableCores++
                                             }
                                             break
-                                        } else {
+                                        }
+                                        if (coreTracker === availableCores) {
                                             //add to aborted list
                                             processList = processList.filter(function(process) {
                                                 return process.id !== freeProcessId
@@ -224,6 +265,21 @@ class Scheduler extends Component {
                                             })
                                             j = -1
                                         }
+                                    } else {
+                                        //add to aborted list
+                                        let abortedProcess = processList.filter(function(process) {
+                                            return process.id === freeProcessId
+                                        })
+                                        abortedProcess[0].status = 'aborted: out of memory'
+                                        processList = processList.filter(function(process) {
+                                            return process.id !== freeProcessId
+                                        })
+                                        abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+                                        this.setState({
+                                            processList,
+                                            abortedProcessList
+                                        })
+                                        j = -1
                                     }
                                 }
                             }
@@ -246,9 +302,23 @@ class Scheduler extends Component {
                             coreList[i].currentQuantum = this.state.quantum
                             coreList[i].processInExecutionRemainingTime = -1
                             availableCores++
+                            let currentBusyMemoryBlock = busyMemoryBlocks.find(function(block) {
+                                return block.pid === currentProcess.id
+                            })
+                            freeMemoryBlocks = [...freeMemoryBlocks, {id: freeMemoryBlocks.length, size: currentBusyMemoryBlock.size, reqsize: 0, pid: null, type: 'free'}]
+                            busyMemoryBlocks = busyMemoryBlocks.filter(function(block) {
+                                return block.pid !== currentProcess.id
+                            })
+                            memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
                         }
                     }
                 }
+
+                this.setState({
+                    freeMemoryBlocks,
+                    busyMemoryBlocks,
+                    memoryBlocksList
+                })
 
                 let currentFinishedProcesses = processList.filter(function(process) {
                     return process.remainingExecutionTime === 0
@@ -303,11 +373,248 @@ class Scheduler extends Component {
                 }
 
                 this.setState({
+                    coreList,
+                    processList,
+                    memoryBlocksList
+                })
+                this.algorithmRoundRobinBestFit()
+            } else {
+                setTimeout(() => {
+                    this.props.history.push('/')
+                }, 10000)
+            }
+        }, 2000)
+    }
+
+    algorithmRoundRobinMergeFit() {
+        setTimeout(() => {
+
+            let coreList = [...this.state.coreList]
+            let processList = [...this.state.processList]
+            let freeMemoryBlocks = [...this.state.freeMemoryBlocks]
+            let busyMemoryBlocks = [...this.state.busyMemoryBlocks]
+            let memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+            let initialMemoryAvailability = this.state.initialMemoryAvailability
+            let finishedProcessList = this.state.finishedProcessList
+            let abortedProcessList = this.state.abortedProcessList
+
+            let availableCores = getAvailableCoreAmmount(coreList)
+
+            //Keep running until empty process list
+            if (processList.length) {
+
+                // Allocating Process to Cores
+                for (let i = 0; i < coreList.length; i++) {
+                    if(coreList[i].status === 'waiting for process' && availableCores > 0) {
+                        for (let j = 0; j < processList.length; j++) {
+                            if(processList[j].status === 'ready') {
+                                let freeProcessId = processList[j].id
+
+                                // Best Fit
+
+                                //Initial start case, no blocks free yet
+                                let busyBlock = busyMemoryBlocks.filter(function(block) {
+                                    return block.pid === freeProcessId
+                                })
+                                if (initialMemoryAvailability > 0 && processList[j].bytes <= initialMemoryAvailability && busyBlock.length === 0) {
+                                    initialMemoryAvailability -= processList[j].bytes
+                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
+                                    memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+                                    this.startProcessExecution(freeProcessId, i, j)
+                                    availableCores--
+                                    this.setState({
+                                        busyMemoryBlocks,
+                                        memoryBlocksList,
+                                        initialMemoryAvailability
+                                    })
+                                    break
+                                }
+                                //Already allocated blocks case
+                                else {
+                                    if (busyBlock.length){
+                                        availableCores--
+                                        this.startProcessExecution(freeProcessId, i, j)
+                                        this.setState({
+                                            coreList,
+                                            processList,
+                                            busyMemoryBlocks,
+                                            memoryBlocksList,
+                                            initialMemoryAvailability
+                                        })
+                                        break
+                                    }
+                                    if (freeMemoryBlocks.length) {
+                                        let coreTracker = availableCores
+
+                                        // Find best available block
+                                        let minSize = processList[j].bytes + 1
+                                        let minSizeBlock
+                                        for (let k = 0; k < freeMemoryBlocks.length; k++) {
+                                            if(processList[j].bytes <= freeMemoryBlocks[k].size) {
+                                                let aux = freeMemoryBlocks[k].size - processList[j].bytes
+                                                if (aux < minSize) {
+                                                    minSize = aux
+                                                    minSizeBlock = freeMemoryBlocks[k]
+                                                }
+                                            }
+                                        }
+                                        if (minSizeBlock) {
+                                            if(freeProcessId >= 0) {
+                                                minSizeBlock.pid = freeProcessId
+                                                minSizeBlock.type = 'busy'
+                                                minSizeBlock.reqsize = processList[j].bytes
+                                                busyMemoryBlocks = [...busyMemoryBlocks, minSizeBlock]
+                                                // eslint-disable-next-line
+                                                freeMemoryBlocks = freeMemoryBlocks.filter(function(block) {
+                                                    return block.id !== minSizeBlock.id
+                                                })
+                                                processList[j].status = 'executing'
+                                                coreList[i].processInExecution = 'P' + freeProcessId
+                                                coreList[i].status = 'executing'
+                                                coreList[i].quantum = this.state.quantum
+                                                coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
+                                                availableCores--
+                                                memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+                                                this.setState({
+                                                    coreList,
+                                                    processList,
+                                                    freeMemoryBlocks,
+                                                    busyMemoryBlocks,
+                                                    memoryBlocksList
+                                                })
+                                                debugger
+                                            } else {
+                                                coreList[i].processInExecution = 'none'
+                                                coreList[i].status = 'waiting for process'
+                                                coreList[i].quantum = this.state.quantum
+                                                coreList[i].processInExecutionRemainingTime = -1
+                                                availableCores++
+                                            }
+                                            break
+                                        }
+                                        if (coreTracker === availableCores) {
+                                            //add to aborted list
+                                            processList = processList.filter(function(process) {
+                                                return process.id !== freeProcessId
+                                            })
+                                            this.setState({
+                                                processList: processList
+                                            })
+                                            j = -1
+                                        }
+                                    } else {
+                                        //add to aborted list
+                                        let abortedProcess = processList.filter(function(process) {
+                                            return process.id === freeProcessId
+                                        })
+                                        abortedProcess[0].status = 'aborted: out of memory'
+                                        processList = processList.filter(function(process) {
+                                            return process.id !== freeProcessId
+                                        })
+                                        abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+                                        this.setState({
+                                            processList,
+                                            abortedProcessList
+                                        })
+                                        j = -1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                this.setState({
                     coreList: coreList,
                     processList: processList
                 })
-                this.algorithmRoundRobin()
-                debugger
+
+                // Remove finished processes (Remaining Execution Time === 0)
+                for (let i = 0; i < coreList.length; i++) {
+                    let runningProcessId = coreList[i].processInExecution.substring(1)
+                    if (runningProcessId !== 'none'.substring(1)) {
+                        let currentProcess = processList.find(process => process.id.toString() === runningProcessId)
+                        if(currentProcess.remainingExecutionTime === 0) {
+                            coreList[i].processInExecution = 'none'
+                            coreList[i].status = 'waiting for process'
+                            coreList[i].currentQuantum = this.state.quantum
+                            coreList[i].processInExecutionRemainingTime = -1
+                            availableCores++
+                            let currentBusyMemoryBlock = busyMemoryBlocks.find(function(block) {
+                                return block.pid === currentProcess.id
+                            })
+                            freeMemoryBlocks = [...freeMemoryBlocks, {id: freeMemoryBlocks.length, size: currentBusyMemoryBlock.size, reqsize: 0, pid: null, type: 'free'}]
+                            busyMemoryBlocks = busyMemoryBlocks.filter(function(block) {
+                                return block.pid !== currentProcess.id
+                            })
+                            memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+                        }
+                    }
+                }
+
+                this.setState({
+                    freeMemoryBlocks,
+                    busyMemoryBlocks,
+                    memoryBlocksList
+                })
+
+                let currentFinishedProcesses = processList.filter(function(process) {
+                    return process.remainingExecutionTime === 0
+                })
+
+                currentFinishedProcesses = currentFinishedProcesses.map(function(process){
+                    process.status = 'finished'
+                    return process
+                })
+
+                Array.prototype.push.apply(finishedProcessList, currentFinishedProcesses)
+
+                processList = processList.filter(function(process) {
+                    return process.remainingExecutionTime > 0
+                })
+
+                // Remove process w/ core quantum === 0 but w/ Remaining Time to Execute > 0
+                for (let i = 0; i < coreList.length; i++) {
+                    let runningProcessId = coreList[i].processInExecution.substring(1)
+                    let notFinishedProcess = processList.find(process => process.id.toString() === runningProcessId)
+                    if(coreList[i].currentQuantum === 0 && notFinishedProcess.remainingExecutionTime > 0) {
+                        coreList[i].processInExecution = 'none'
+                        coreList[i].status = 'waiting for process'
+                        coreList[i].currentQuantum = this.state.quantum
+                        availableCores++
+                        processList = processList.filter(function(process) {
+                            return process.id.toString() !== runningProcessId
+                        }) 
+                        notFinishedProcess.status = 'ready'
+                        processList = [...processList, notFinishedProcess]
+                    }
+                }
+                this.setState({
+                    coreList,
+                    processList,
+                    finishedProcessList
+                })
+
+                // Updates Executing Processes
+                for (let i = 0; i < processList.length; i++) {
+                    if(processList[i].status === 'executing') {
+                        processList[i].remainingExecutionTime--
+                    }
+                }
+
+                // Updates Quantum on working Cores
+                for (let i = 0; i < coreList.length; i++) {
+                    if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
+                        coreList[i].currentQuantum--
+                        coreList[i].processInExecutionRemainingTime--
+                    }
+                }
+
+                this.setState({
+                    coreList,
+                    processList,
+                    memoryBlocksList
+                })
+                this.algorithmRoundRobinBestFit()
             } else {
                 setTimeout(() => {
                     this.props.history.push('/')
@@ -527,6 +834,21 @@ class Scheduler extends Component {
         }
     }
 
+    startProcessExecution = (processID, coreListRef, processListRef) => {
+        let coreList = [...this.state.coreList]
+        let processList = [...this.state.processList]
+        processList[processListRef].status = 'executing'
+        coreList[coreListRef].processInExecution = 'P' + processID
+        coreList[coreListRef].status = 'executing'
+        coreList[coreListRef].quantum = this.state.quantum
+        coreList[coreListRef].processInExecutionRemainingTime = processList[processListRef].remainingExecutionTime
+        this.setState({
+            coreList,
+            processList
+        })
+    }
+    
+
     render () {
         return (
             <div>
@@ -556,6 +878,9 @@ class Scheduler extends Component {
 
                 <div>
                     <FinishedProcessList processes={this.state.finishedProcessList}/>
+                </div>
+                <div>
+                    <AbortedProcessList processes={this.state.abortedProcessList}/>
                 </div>
             </div>
         )
