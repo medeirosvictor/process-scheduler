@@ -554,7 +554,8 @@ class Scheduler extends Component {
                 }
 
                 this.setState({
-                    memoryBlocksList
+                    memoryBlocksList,
+                    initialMemoryAvailability
                 })
                 // Allocating Process to Cores
 
@@ -658,8 +659,16 @@ class Scheduler extends Component {
                                             processList = processList.filter(function(process) {
                                                 return process.id !== freeProcessId
                                             })
+
+                                            let abortedProcess = processList.filter(function(process) {
+                                                return process.id === freeProcessId
+                                            })
+                                            abortedProcess[0].status = 'aborted: out of memory'
+                                            abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+
                                             this.setState({
-                                                processList: processList
+                                                processList,
+                                                abortedProcessList
                                             })
                                             j = -1
                                         }
@@ -895,6 +904,43 @@ class Scheduler extends Component {
                     }
                 }
 
+                if (memoryBlocksList.length) {
+                    for (let k = 0 ; k < memoryBlocksList.length; k++) {
+                        if (k === memoryBlocksList.length) {
+                            break
+                        }
+                        if (k === memoryBlocksList.length - 1) {
+                            if (memoryBlocksList[k].type === 'free' && initialMemoryAvailability > 0) { 
+                                initialMemoryAvailability += memoryBlocksList[k].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    return block.id !== memoryBlocksList[k].id
+                                })
+                                break
+                            }
+                        }
+                        if (memoryBlocksList[k].type === 'free') {
+                            if (memoryBlocksList[k+1] && memoryBlocksList[k+1].type === "free") {
+                                memoryBlocksList[k].size += memoryBlocksList[k+1].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    if (block.id === memoryBlocksList[k].id) {
+                                        memoryBlocksList[k].reqsize = 0
+                                    }
+                                    return block.id !== memoryBlocksList[k+1].id
+                                })
+                            }
+                            if (memoryBlocksList[k-1] && memoryBlocksList[k-1].type === "free") {
+                                memoryBlocksList[k].size += memoryBlocksList[k-1].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    if (block.id === memoryBlocksList[k].id) {
+                                        memoryBlocksList[k].reqsize = 0
+                                    }
+                                    return block.id !== memoryBlocksList[k-1].id
+                                })
+                            }
+                        }
+                    }
+                }
+
                 this.setState({
                     coreList,
                     processList,
@@ -902,6 +948,46 @@ class Scheduler extends Component {
                 })
                 this.algorithmRoundRobinMergeFit()
             } else {
+                if (memoryBlocksList.length) {
+                    for (let k = 0 ; k < memoryBlocksList.length; k++) {
+                        if (k === memoryBlocksList.length) {
+                            break
+                        }
+                        if (k === memoryBlocksList.length - 1) {
+                            if (memoryBlocksList[k].type === 'free' && initialMemoryAvailability > 0) { 
+                                initialMemoryAvailability += memoryBlocksList[k].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    return block.id !== memoryBlocksList[k].id
+                                })
+                                break
+                            }
+                        }
+                        if (memoryBlocksList[k].type === 'free') {
+                            if (memoryBlocksList[k+1] && memoryBlocksList[k+1].type === "free") {
+                                memoryBlocksList[k].size += memoryBlocksList[k+1].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    if (block.id === memoryBlocksList[k].id) {
+                                        memoryBlocksList[k].reqsize = 0
+                                    }
+                                    return block.id !== memoryBlocksList[k+1].id
+                                })
+                            }
+                            if (memoryBlocksList[k-1] && memoryBlocksList[k-1].type === "free") {
+                                memoryBlocksList[k].size += memoryBlocksList[k-1].size
+                                memoryBlocksList = memoryBlocksList.filter(function(block) {
+                                    if (block.id === memoryBlocksList[k].id) {
+                                        memoryBlocksList[k].reqsize = 0
+                                    }
+                                    return block.id !== memoryBlocksList[k-1].id
+                                })
+                            }
+                        }
+                    }
+                }
+                this.setState({
+                    initialMemoryAvailability,
+                    memoryBlocksList
+                })
                 setTimeout(() => {
                     this.props.history.push('/')
                 }, 10000)
