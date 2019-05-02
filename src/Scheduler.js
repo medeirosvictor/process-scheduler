@@ -272,6 +272,11 @@ class Scheduler extends Component {
                                         processList = processList.filter(function(process) {
                                             return process.id !== freeProcessId
                                         })
+                                        coreList[i].processInExecution = 'none'
+                                        coreList[i].status = 'waiting for process'
+                                        coreList[i].quantum = this.state.quantum
+                                        coreList[i].processInExecutionRemainingTime = -1
+                                        availableCores++
                                         abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                         this.setState({
                                             processList,
