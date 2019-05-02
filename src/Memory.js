@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Memory = ({memoryBlocks}) => {
-    const memoryBlocksList = memoryBlocks.slice(0).reverse().map(memoryBlock => {
+    const memoryBlocksList = memoryBlocks.map(memoryBlock => {
         if (memoryBlock.size) {
             return (
                 <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'}>
