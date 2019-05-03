@@ -155,7 +155,7 @@ class Scheduler extends Component {
             let processList = [...this.state.processList]
             let freeMemoryBlocks = [...this.state.freeMemoryBlocks]
             let busyMemoryBlocks = [...this.state.busyMemoryBlocks]
-            let memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+            let memoryBlocksList = [...this.state.memoryBlocksList]
             let initialMemoryAvailability = this.state.initialMemoryAvailability
             let finishedProcessList = this.state.finishedProcessList
             let abortedProcessList = this.state.abortedProcessList
@@ -170,7 +170,7 @@ class Scheduler extends Component {
                             if(processList[j].status === 'ready') {
                                 let freeProcessId = processList[j].id
 
-                                // Merge Fit
+                                // Best Fit
 
                                 //Initial start case, no blocks free yet
                                 let busyBlock = busyMemoryBlocks.filter(function(block) {
@@ -178,8 +178,8 @@ class Scheduler extends Component {
                                 })
                                 if (initialMemoryAvailability > 0 && processList[j].bytes <= initialMemoryAvailability && busyBlock.length === 0) {
                                     initialMemoryAvailability -= processList[j].bytes
-                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
-                                    memoryBlocksList = [...memoryBlocksList, {id: busyMemoryBlocks.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
+                                    busyMemoryBlocks = [...busyMemoryBlocks, {id: memoryBlocksList.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
+                                    memoryBlocksList = [...memoryBlocksList, {id: memoryBlocksList.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
                                     this.startProcessExecution(freeProcessId, i, j)
                                     availableCores--
                                     this.setState({
@@ -224,7 +224,7 @@ class Scheduler extends Component {
                                                 minSizeBlock.type = 'busy'
                                                 minSizeBlock.reqsize = processList[j].bytes
                                                 busyMemoryBlocks = [...busyMemoryBlocks, minSizeBlock]
-                                                memoryBlocksList = [...memoryBlocksList, minSizeBlock]
+
                                                 // eslint-disable-next-line
                                                 freeMemoryBlocks = freeMemoryBlocks.filter(function(block) {
                                                     return block.id !== minSizeBlock.id
@@ -265,8 +265,14 @@ class Scheduler extends Component {
                                             processList = processList.filter(function(process) {
                                                 return process.id !== freeProcessId
                                             })
+                                            let abortedProcess = processList.filter(function(process) {
+                                                return process.id === freeProcessId
+                                            })
+                                            abortedProcess[0].status = 'aborted: out of memory'
+                                            abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                             this.setState({
-                                                processList: processList
+                                                processList,
+                                                abortedProcessList
                                             })
                                             j = -1
                                         }
@@ -279,15 +285,12 @@ class Scheduler extends Component {
                                         processList = processList.filter(function(process) {
                                             return process.id !== freeProcessId
                                         })
-                                        coreList[i].processInExecution = 'none'
-                                        coreList[i].status = 'waiting for process'
-                                        coreList[i].quantum = this.state.quantum
-                                        coreList[i].processInExecutionRemainingTime = -1
-                                        availableCores++
+
                                         abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                         this.setState({
                                             processList,
-                                            abortedProcessList
+                                            abortedProcessList,
+                                            coreList
                                         })
                                         j = -1
                                     }
@@ -298,7 +301,8 @@ class Scheduler extends Component {
                 }
                 this.setState({
                     coreList: coreList,
-                    processList: processList
+                    processList: processList,
+                    abortedProcessList
                 })
 
                 // Remove finished processes (Remaining Execution Time === 0)
@@ -663,12 +667,14 @@ class Scheduler extends Component {
                                             let abortedProcess = processList.filter(function(process) {
                                                 return process.id === freeProcessId
                                             })
-                                            abortedProcess[0].status = 'aborted: out of memory'
-                                            abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+
+                                            if (abortedProcess[0]) {
+                                                abortedProcess[0].status = 'aborted: out of memory'
+                                                abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+                                            }
 
                                             this.setState({
-                                                processList,
-                                                abortedProcessList
+                                                processList
                                             })
                                             j = -1
                                         }
@@ -685,8 +691,7 @@ class Scheduler extends Component {
                                         abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                         this.setState({
                                             processList,
-                                            coreList,
-                                            abortedProcessList
+                                            coreList
                                         })
                                         j = -1
                                     }
@@ -697,7 +702,8 @@ class Scheduler extends Component {
                 }
                 this.setState({
                     coreList: coreList,
-                    processList: processList
+                    processList: processList,
+                    abortedProcessList
                 })
 
                 // Remove finished processes (Remaining Execution Time === 0)

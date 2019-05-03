@@ -190,6 +190,8 @@ text-center {
             border: 1px solid gray;
             background-color: #56e6e8;
             padding: 3px;
+            margin: 3px;
+            min-width: 145px;
 
             &.free {
                 background-color: white;
@@ -202,6 +204,10 @@ text-center {
 
             &_container {
                 display: flex;
+                flex-wrap: wrap;
+                background-color: #fff;
+                padding: 5px;
+                margin: 10px 0;
             }
         }
 

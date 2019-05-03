@@ -132,14 +132,20 @@ text-center {
     .App .memory-block {
       border: 1px solid gray;
       background-color: #56e6e8;
-      padding: 3px; }
+      padding: 3px;
+      margin: 3px;
+      min-width: 145px; }
       .App .memory-block.free {
         background-color: white;
         color: black; }
       .App .memory-block.busy {
         color: midnightblue; }
       .App .memory-block_container {
-        display: flex; }
+        display: flex;
+        flex-wrap: wrap;
+        background-color: #fff;
+        padding: 5px;
+        margin: 10px 0; }
     .App .memory-initial {
       border: 1px solid gray;
       padding: 3px; }
