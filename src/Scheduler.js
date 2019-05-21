@@ -1249,7 +1249,7 @@ class Scheduler extends Component {
                 <Core cores={this.state.coreList} />
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
 
-                <div className="memory">
+                <div className={this.state.algorithm !== 'round-robin' ? "memory hide" : "memory" }>
                     <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
                     {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? "super block":"not allocated"}</div> : <div className="hide"></div>}
                 </div>
