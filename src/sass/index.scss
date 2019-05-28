@@ -56,6 +56,15 @@ text-center {
         }
     }
 
+    .disclaimer {
+        font-size: 13px;
+        max-width: 350px;
+    }
+
+    .section-title {
+        width: 100%;
+    }
+
     .algorithm-selector_button-submit,
     .add-process-button {
         width: 100%;
@@ -172,7 +181,7 @@ text-center {
     }
 
     .memory {
-        margin: 20px 0;
+        margin: 10px 0;
         display: flex;
         flex-wrap: wrap;
         background-color: #fff;

@@ -10,6 +10,7 @@ import { createPropsSelector } from 'reselect-immutable-helpers'
 import { receiveAlgorithmData } from './Actions'
 import { sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
 import Memory from './Memory';
+import Disk from './Disk';
 
 class Scheduler extends Component {
     /** 
@@ -262,12 +263,13 @@ class Scheduler extends Component {
                                         }
                                         if (coreTracker === availableCores) {
                                             //add to aborted list
-                                            processList = processList.filter(function(process) {
-                                                return process.id !== freeProcessId
-                                            })
                                             let abortedProcess = processList.filter(function(process) {
                                                 return process.id === freeProcessId
                                             })
+                                            processList = processList.filter(function(process) {
+                                                return process.id !== freeProcessId
+                                            })
+
                                             abortedProcess[0].status = 'aborted: out of memory'
                                             abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                             this.setState({
@@ -1246,18 +1248,30 @@ class Scheduler extends Component {
                     {this.state.algorithm === 'priority-queue' ? <div>Priorities and Quantums(Q) = (0 = 4 * Q, 1 =  3*Q, 2 = 2*Q, 3 = Q)<div>Quantum Submited (Initial Q) = {this.state.quantum}s</div></div> : <div></div>}
                     <button className="add-process-button" onClick={this.handleClick}>Add Random Process</button>
                 </div>
+                <div className="section-title">Core List</div>
                 <Core cores={this.state.coreList} />
+
+                <div className="section-title">Process List</div>
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
 
-                <div className={this.state.algorithm !== 'round-robin' ? "memory hide" : "memory" }>
-                    <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
-                    {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? "super block":"not allocated"}</div> : <div className="hide"></div>}
+                <div>
+                    <Disk diskPages={this.state.diskPages}/>
+                </div>
+                
+                <div>
+                    <div className="section-title">Memory</div>
+                    <div className={this.state.algorithm !== 'round-robin' ? "memory hide" : "memory" }>
+                        <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
+                        {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? "super block":"not allocated"}</div> : <div className="hide"></div>}
+                    </div>
                 </div>
 
                 <div>
+                    <div className="section-title">Finished Process List</div>
                     <FinishedProcessList processes={this.state.finishedProcessList}/>
                 </div>
                 <div>
+                    <div className="section-title">Aborted Process List</div>
                     <AbortedProcessList processes={this.state.abortedProcessList}/>
                 </div>
             </div>

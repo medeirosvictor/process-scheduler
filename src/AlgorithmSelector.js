@@ -134,6 +134,9 @@ class AlgorithmSelector extends Component {
                     </div>
 
                     <div className={this.props.algorithmData.algorithm === 'round-robin' || this.props.algorithmData.algorithm === 'priority-queue' ? '' : 'hide'}>
+                        <div className="disclaimer">
+                            This selection contains simulations for Swapping/Pagination algorithms on Virtual Memory/Disk management. (Best Fit)
+                        </div>
                         <input className="algorithm-selector_input " type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={this.props.algorithmData.algorithm === 'round-robin' || this.props.algorithmData.algorithm === 'priority-queue' ? true : false}/>
                     </div>
 

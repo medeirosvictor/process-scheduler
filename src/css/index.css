@@ -40,6 +40,11 @@ text-center {
       height: 25px;
       margin: 3px 0;
       padding: 3px; }
+  .App .disclaimer {
+    font-size: 13px;
+    max-width: 350px; }
+  .App .section-title {
+    width: 100%; }
   .App .algorithm-selector_button-submit,
   .App .add-process-button {
     width: 100%;
@@ -118,7 +123,7 @@ text-center {
           color: black;
           background-color: #d3ffd5; }
   .App .memory {
-    margin: 20px 0;
+    margin: 10px 0;
     display: flex;
     flex-wrap: wrap;
     background-color: #fff;
