@@ -11,6 +11,7 @@ import { receiveAlgorithmData } from './Actions'
 import { sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
 import Memory from './Memory';
 import Disk from './Disk';
+import MemoryPageList from './MemoryPageList';
 
 class Scheduler extends Component {
     /** 
@@ -160,6 +161,10 @@ class Scheduler extends Component {
             let initialMemoryAvailability = this.state.initialMemoryAvailability
             let finishedProcessList = this.state.finishedProcessList
             let abortedProcessList = this.state.abortedProcessList
+            let diskPageList = this.state.diskPageList
+            let memoryPageList = this.state.memoryPageList
+            let pageSize = this.state.pageSize
+            let diskSize = this.state.diskSize
 
             let availableCores = getAvailableCoreAmmount(coreList)
 
@@ -183,10 +188,24 @@ class Scheduler extends Component {
                                     memoryBlocksList = [...memoryBlocksList, {id: memoryBlocksList.length, size: processList[j].bytes, reqsize: processList[j].bytes, pid: freeProcessId, type: 'busy'}]
                                     this.startProcessExecution(freeProcessId, i, j)
                                     availableCores--
+
+                                    //create page list or add to existing page list
+                                    if (memoryPageList.length) {
+                                        for (let i=0; i < memoryPageList.length; i++) {
+                                            if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + processList[j].bytes <= pageSize) {
+                                                memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: processList[j].id, requestSize: processList[j].bytes}]
+                                                memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + processList[j].byte
+                                            }
+                                        }
+                                    } else {
+                                        memoryPageList.push({pageID: memoryPageList.length, currentPageSize: processList[j].bytes, processList: [{processId: processList[j].id, requestSize: processList[j].bytes}]})
+                                    }
+                                    debugger
                                     this.setState({
                                         busyMemoryBlocks,
                                         memoryBlocksList,
-                                        initialMemoryAvailability
+                                        initialMemoryAvailability,
+                                        memoryPageList
                                     })
                                     break
                                 }
@@ -283,16 +302,15 @@ class Scheduler extends Component {
                                         let abortedProcess = processList.filter(function(process) {
                                             return process.id === freeProcessId
                                         })
-                                        abortedProcess[0].status = 'aborted: out of memory'
                                         processList = processList.filter(function(process) {
                                             return process.id !== freeProcessId
                                         })
-
+                                        
+                                        abortedProcess[0].status = 'aborted: out of memory'
                                         abortedProcessList = [...abortedProcessList, abortedProcess[0]]
                                         this.setState({
                                             processList,
-                                            abortedProcessList,
-                                            coreList
+                                            abortedProcessList
                                         })
                                         j = -1
                                     }
@@ -302,8 +320,8 @@ class Scheduler extends Component {
                     }
                 }
                 this.setState({
-                    coreList: coreList,
-                    processList: processList,
+                    coreList,
+                    processList,
                     abortedProcessList
                 })
 
@@ -473,15 +491,6 @@ class Scheduler extends Component {
                     }
                 }
 
-                this.setState({
-                    coreList,
-                    processList,
-                    memoryBlocksList,
-                    freeMemoryBlocks,
-                    busyMemoryBlocks,
-                    abortedProcessList
-                })
-
                 // Updates Quantum on working Cores
                 for (let i = 0; i < coreList.length; i++) {
                     if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
@@ -493,8 +502,13 @@ class Scheduler extends Component {
                 this.setState({
                     coreList,
                     processList,
-                    memoryBlocksList
+                    memoryBlocksList,
+                    freeMemoryBlocks,
+                    busyMemoryBlocks,
+                    abortedProcessList
                 })
+
+                debugger;
                 this.algorithmRoundRobinMergeFit()
             } else {
                 setTimeout(() => {
@@ -1255,7 +1269,13 @@ class Scheduler extends Component {
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
 
                 <div>
-                    <Disk diskPages={this.state.diskPages}/>
+                    <div className="section-title">HD Pages</div>
+                    <Disk diskPages={this.state.diskPageList}/>
+                </div>
+
+                <div>
+                    <div className="section-title">Memory Pages</div>
+                    <MemoryPageList memoryPages={this.state.memoryPageList}/>
                 </div>
                 
                 <div>

@@ -14,7 +14,11 @@ const initialState = Immutable.fromJS({
         freeMemoryBlocks: [],
         busyMemoryBlocks: [],
         memoryBlocksList: [],
-        initialMemoryAvailability: 0
+        initialMemoryAvailability: 0,
+        memoryPageList: [],
+        diskPageList: [],
+        diskSize: 20480,
+        pageSize: 1024
     }
 })
 

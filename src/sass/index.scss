@@ -46,6 +46,7 @@ text-center {
         form {
             padding: 25px;
             background-color: #fff;
+            min-width: 400px;
         }
 
         &_input {
@@ -142,6 +143,11 @@ text-center {
                 width: 100%;
             }
         }
+
+        &_memory-page {
+            width: 100%;
+            border-bottom: 1px solid #d1d5da;
+        }
     }
 
     .core-list {
@@ -224,5 +230,16 @@ text-center {
             border: 1px solid gray;
             padding: 3px;
         }
+    }
+
+    .disk-page_container,
+    .memory-page_container {
+        margin: 10px 0;
+        display: flex;
+        flex-wrap: wrap;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #d1d5da;
+        min-height: 69px;
     }
 }
