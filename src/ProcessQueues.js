@@ -10,8 +10,7 @@ const Processes = ({processes}) => {
         if(i === 0) {
             priorityList0 = processes[i].map(process => {
                 return (
-                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}
-                    data-process-info={JSON.stringify(process)}>
+                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
@@ -23,8 +22,7 @@ const Processes = ({processes}) => {
         } else if (i === 1) {
             priorityList1 = processes[i].map(process => {
                 return (
-                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}
-                    data-process-info={JSON.stringify(process)}>
+                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
@@ -36,8 +34,7 @@ const Processes = ({processes}) => {
         } else if (i === 2) {
             priorityList2 = processes[i].map(process => {
                 return (
-                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}
-                    data-process-info={JSON.stringify(process)}>
+                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>
@@ -49,8 +46,7 @@ const Processes = ({processes}) => {
         } else if (i === 3) {
             priorityList3 = processes[i].map(process => {
                 return (
-                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}
-                    data-process-info={JSON.stringify(process)}>
+                    <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
                         <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
                         <div>Status: {process.status}</div>
                         <div>TET: {process.totalExecutionTime}s</div>

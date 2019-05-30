@@ -22,6 +22,10 @@ code {
     monospace;
 }
 
+.bold {
+    font-weight: bold;
+}
+
 .hide {
     display: none !important;
 }
@@ -64,6 +68,7 @@ text-center {
 
     .section-title {
         width: 100%;
+        margin: 10px;
     }
 
     .algorithm-selector_button-submit,
@@ -118,6 +123,7 @@ text-center {
             &.finished {
                 background-color: #ebebeb;
                 border-color: #d3ffd5;
+                min-width: 220px;
                 
                 &.aborted {
                     color: crimson;
@@ -151,12 +157,12 @@ text-center {
     }
 
     .core-list {
-        margin: 20px 0;
         display: flex;
         flex-wrap: wrap;
         background-color: #fff;
         padding: 5px;
         border: 1px solid #d1d5da;
+        margin: 10px 0;
 
         .core {
             min-width: 200px;
@@ -187,18 +193,21 @@ text-center {
     }
 
     .memory {
-        margin: 10px 0;
         display: flex;
         flex-wrap: wrap;
         background-color: #fff;
         padding: 5px;
         border: 1px solid #d1d5da;
-        min-height: 69px;
+        margin: 10px 0;
+        min-height: 70px;
 
         &-initial {
             display: flex;
             justify-content: center;
             align-items: center;
+            border: 1px solid gray;
+            padding: 5px;
+            margin: 10px;
         }
 
         &-block {
@@ -206,7 +215,7 @@ text-center {
             background-color: #56e6e8;
             padding: 3px;
             margin: 3px;
-            min-width: 145px;
+            min-width: 180px;
 
             &.free {
                 background-color: white;
@@ -226,20 +235,29 @@ text-center {
             }
         }
 
-        &-initial {
-            border: 1px solid gray;
-            padding: 3px;
+        &-page {
+            border: 1px solid #d1d5da;
+            padding: 5px;
+            margin: 3px;
+            min-width: 210px;
+
+            &_process {
+                border: 1px solid lightsteelblue;
+                padding: 3px;
+                margin-bottom: 3px;
+            }
         }
     }
 
     .disk-page_container,
     .memory-page_container {
-        margin: 10px 0;
         display: flex;
         flex-wrap: wrap;
         background-color: #fff;
         padding: 5px;
         border: 1px solid #d1d5da;
-        min-height: 69px;
+        margin: 10px 0;
+        min-height: 70px;
+        
     }
 }

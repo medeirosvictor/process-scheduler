@@ -17,6 +17,9 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace; }
 
+.bold {
+  font-weight: bold; }
+
 .hide {
   display: none !important; }
 
@@ -45,7 +48,8 @@ text-center {
     font-size: 13px;
     max-width: 350px; }
   .App .section-title {
-    width: 100%; }
+    width: 100%;
+    margin: 10px; }
   .App .algorithm-selector_button-submit,
   .App .add-process-button {
     width: 100%;
@@ -84,7 +88,8 @@ text-center {
           flex: 1; } }
       .App .process-list .process.finished {
         background-color: #ebebeb;
-        border-color: #d3ffd5; }
+        border-color: #d3ffd5;
+        min-width: 220px; }
         .App .process-list .process.finished.aborted {
           color: crimson; }
       .App .process-list .process_name {
@@ -102,12 +107,12 @@ text-center {
       width: 100%;
       border-bottom: 1px solid #d1d5da; }
   .App .core-list {
-    margin: 20px 0;
     display: flex;
     flex-wrap: wrap;
     background-color: #fff;
     padding: 5px;
-    border: 1px solid #d1d5da; }
+    border: 1px solid #d1d5da;
+    margin: 10px 0; }
     .App .core-list .core {
       min-width: 200px;
       border: 1px solid #282c34;
@@ -127,23 +132,26 @@ text-center {
           color: black;
           background-color: #d3ffd5; }
   .App .memory {
-    margin: 10px 0;
     display: flex;
     flex-wrap: wrap;
     background-color: #fff;
     padding: 5px;
     border: 1px solid #d1d5da;
-    min-height: 69px; }
+    margin: 10px 0;
+    min-height: 70px; }
     .App .memory-initial {
       display: flex;
       justify-content: center;
-      align-items: center; }
+      align-items: center;
+      border: 1px solid gray;
+      padding: 5px;
+      margin: 10px; }
     .App .memory-block {
       border: 1px solid gray;
       background-color: #56e6e8;
       padding: 3px;
       margin: 3px;
-      min-width: 145px; }
+      min-width: 180px; }
       .App .memory-block.free {
         background-color: white;
         color: black; }
@@ -155,15 +163,21 @@ text-center {
         background-color: #fff;
         padding: 5px;
         margin: 10px 0; }
-    .App .memory-initial {
-      border: 1px solid gray;
-      padding: 3px; }
+    .App .memory-page {
+      border: 1px solid #d1d5da;
+      padding: 5px;
+      margin: 3px;
+      min-width: 210px; }
+      .App .memory-page_process {
+        border: 1px solid lightsteelblue;
+        padding: 3px;
+        margin-bottom: 3px; }
   .App .disk-page_container,
   .App .memory-page_container {
-    margin: 10px 0;
     display: flex;
     flex-wrap: wrap;
     background-color: #fff;
     padding: 5px;
     border: 1px solid #d1d5da;
-    min-height: 69px; }
+    margin: 10px 0;
+    min-height: 70px; }

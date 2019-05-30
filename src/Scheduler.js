@@ -190,17 +190,19 @@ class Scheduler extends Component {
                                     availableCores--
 
                                     //create page list or add to existing page list
-                                    if (memoryPageList.length) {
-                                        for (let i=0; i < memoryPageList.length; i++) {
-                                            if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + processList[j].bytes <= pageSize) {
-                                                memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: processList[j].id, requestSize: processList[j].bytes}]
-                                                memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + processList[j].byte
-                                            }
+                                    let addedToExistingPage = false
+                                    for (let i=0; i < memoryPageList.length; i++) {
+                                        if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + processList[j].bytes <= pageSize) {
+                                            memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: processList[j].id, requestSize: processList[j].bytes}]
+                                            memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + processList[j].bytes
+                                            addedToExistingPage = true
+                                            break
                                         }
-                                    } else {
-                                        memoryPageList.push({pageID: memoryPageList.length, currentPageSize: processList[j].bytes, processList: [{processId: processList[j].id, requestSize: processList[j].bytes}]})
                                     }
-                                    debugger
+                                    if (!addedToExistingPage) {
+                                        memoryPageList.push({id: memoryPageList.length, currentPageSize: processList[j].bytes, processList: [{processId: processList[j].id, requestSize: processList[j].bytes}]})
+                                    }
+
                                     this.setState({
                                         busyMemoryBlocks,
                                         memoryBlocksList,
@@ -264,12 +266,27 @@ class Scheduler extends Component {
                                                 coreList[i].quantum = this.state.quantum
                                                 coreList[i].processInExecutionRemainingTime = processList[j].remainingExecutionTime
                                                 availableCores--
+
+                                                let addedToExistingPage = false
+                                                for (let i=0; i < memoryPageList.length; i++) {
+                                                    if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + processList[j].bytes <= pageSize) {
+                                                        memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: freeProcessId, requestSize: processList[j].bytes}]
+                                                        memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + processList[j].bytes
+                                                        addedToExistingPage = true
+                                                        break
+                                                    }
+                                                }
+                                                if (!addedToExistingPage) {
+                                                    memoryPageList.push({id: memoryPageList.length, currentPageSize: processList[j].bytes, processList: [{processId: freeProcessId, requestSize: processList[j].bytes}]})
+                                                }
+
                                                 this.setState({
                                                     coreList,
                                                     processList,
                                                     freeMemoryBlocks,
                                                     busyMemoryBlocks,
-                                                    memoryBlocksList
+                                                    memoryBlocksList,
+                                                    memoryPageList
                                                 })
                                             } else {
                                                 coreList[i].processInExecution = 'none'
@@ -361,9 +378,27 @@ class Scheduler extends Component {
                     memoryBlocksList
                 })
 
+
+                // Remove finished Processes
+                let finishedProcessListId = []
                 let currentFinishedProcesses = processList.filter(function(process) {
+                    if (process.remainingExecutionTime === 0) {
+                        finishedProcessListId.push(process.id)
+                    }
                     return process.remainingExecutionTime === 0
                 })
+
+                if (finishedProcessListId.length) {
+                    for(let i = 0; i < memoryPageList.length; i++) {
+                        for(let j = 0; j < memoryPageList[i].processList.length; j++) {
+                            if(finishedProcessListId.includes(memoryPageList[i].processList[j].processId)) {
+                                debugger
+                                memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize - memoryPageList[i].processList[j].requestSize
+                                memoryPageList[i].processList.splice(j, 1);
+                            }
+                        }
+                    }
+                }
 
                 currentFinishedProcesses = currentFinishedProcesses.map(function(process){
                     process.status = 'finished'
@@ -405,7 +440,7 @@ class Scheduler extends Component {
 
                         // checking for random requests
                         let requestRdm = randomIntFromInterval(1, 4);
-                        if (requestRdm === 1 || requestRdm === 2) {
+                        if (requestRdm === 1) {
                             let request = {pid: processList[i].id, size: randomIntFromInterval(32, 512)}
 
                             // Allocate request in best available block
@@ -413,10 +448,27 @@ class Scheduler extends Component {
                                 initialMemoryAvailability -= request.size
                                 busyMemoryBlocks = [...busyMemoryBlocks, {id: busyMemoryBlocks.length, size: request.size, reqsize: request.size, pid: processList[i].id, type: 'busy'}]
                                 memoryBlocksList = [...busyMemoryBlocks, ...freeMemoryBlocks]
+
+                                if (memoryPageList.length) {
+                                    let addedToExistingPage = false
+                                    for (let i=0; i < memoryPageList.length; i++) {
+                                        if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + request.size <= pageSize) {
+                                            memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: request.pid, requestSize: request.size}]
+                                            memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + request.size
+                                            addedToExistingPage = true
+                                            break
+                                        }
+                                    }
+                                    if (!addedToExistingPage) {
+                                        memoryPageList.push({id: memoryPageList.length, currentPageSize: request.size, processList: [{processId: request.pid, requestSize: request.size}]})
+                                    }
+                                }
+
                                 this.setState({
                                     busyMemoryBlocks,
                                     memoryBlocksList,
-                                    initialMemoryAvailability
+                                    initialMemoryAvailability,
+                                    memoryPageList
                                 })
                             }
                             else if (freeMemoryBlocks.length) {
@@ -464,12 +516,24 @@ class Scheduler extends Component {
                                     }
                                     return block.pid !== processList[i].id
                                 })
+
                                 for (let k = 0; k < coreList.length; k++) {
-                                    if (coreList[k].processInExecution === processList[i].id) {
+                                    if (coreList[k].processInExecution.substring(1) === processList[i].id.toString()) {
                                         coreList[k].processInExecution = 'none'
                                         coreList[k].status = 'waiting for process'
                                         coreList[k].currentQuantum = this.state.quantum
                                         availableCores++
+                                    }
+                                }
+
+                                // clean memory pages
+                                for(let k = 0; k < memoryPageList.length; k++) {
+                                    for(let j = 0; j < memoryPageList[k].processList.length; j++) {
+                                        if(memoryPageList[k].processList[j].processId === processList[i].id) {
+                                            debugger
+                                            memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].processList[j].requestSize
+                                            memoryPageList[k].processList.splice(j, 1);
+                                        }
                                     }
                                 }
 
@@ -508,8 +572,7 @@ class Scheduler extends Component {
                     abortedProcessList
                 })
 
-                debugger;
-                this.algorithmRoundRobinMergeFit()
+                this.algorithmRoundRobinBestFit()
             } else {
                 setTimeout(() => {
                     this.props.history.push('/')
@@ -1251,6 +1314,12 @@ class Scheduler extends Component {
                         Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span>
                     </div>
                     <div>
+                        Page Size: <span className="process-scheduler_info-algorithm">{this.state.pageSize}</span>
+                    </div>
+                    <div>
+                        Disk Size: <span className="process-scheduler_info-algorithm">{this.state.diskSize}</span>
+                    </div>
+                    <div>
                         PIE = Process In Execution
                     </div>
                     <div>
@@ -1274,7 +1343,7 @@ class Scheduler extends Component {
                 </div>
 
                 <div>
-                    <div className="section-title">Memory Pages</div>
+                    <div className="section-title">Memory Pages - Page Size {this.state.pageSize} bytes</div>
                     <MemoryPageList memoryPages={this.state.memoryPageList}/>
                 </div>
                 

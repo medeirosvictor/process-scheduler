@@ -4,7 +4,7 @@ const Memory = ({memoryBlocks}) => {
     const memoryBlocksList = memoryBlocks.map(memoryBlock => {
         if (memoryBlock.size) {
             return (
-                <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'}>
+                <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'} key={memoryBlock.id}>
                     <div>Block ID: {memoryBlock.id }</div>
                     <div>Block PID: {memoryBlock.type === 'free' ? 'free' : 'P' + memoryBlock.pid }</div>
                     <div>Size: { memoryBlock.size } bytes</div>

@@ -9,7 +9,8 @@ Attributes:
 const MemoryPageList = ({memoryPages}) => {
     const memoryPageList = memoryPages.map(memoryPage => {
         return (
-            <div className={memoryPage.type === 'free' ? 'disk-page free' : 'disk-page busy'}>
+            <div className={memoryPage.type === 'free' ? 'memory-page free' : 'memory-page busy'} key={memoryPage.id}>
+                <div className="bold">Page {memoryPage.id} - {memoryPage.currentPageSize} bytes occupied</div>
                 <MemoryPage processList={memoryPage.processList}/>
             </div>
         )

@@ -1,22 +1,21 @@
 import React from 'react';
 
 const MemoryPage = ({processList}) => {
-    const memoryPage = processList.map(process => {
-        debugger
+    const memoryPage = processList.map((process, index) => {
         return (
-            <div className="process-list_memory-page">
+            <div className="memory-page_process" key={index}>
                 <div>
-                    PID: {process.processId}
+                    PID: P{process.processId}
                 </div>
                 <div>
-                    REQ: {process.requestSize}
+                    REQ: {process.requestSize} bytes
                 </div>
             </div>
         )
     });
 
     return (
-        <div className="memory-page_container">
+        <div className="memory-page_process-list">
             { memoryPage.length ? memoryPage : <div className="hide">No memory pages available</div> }
         </div>
     )
