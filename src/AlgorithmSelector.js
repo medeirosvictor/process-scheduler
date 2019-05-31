@@ -101,7 +101,8 @@ class AlgorithmSelector extends Component {
     generateMemoryAllocation = (memoryAmmount) => {
         this.props.receiveAlgorithmData({
             algorithmData: {
-                initialMemoryAvailability: Number.parseInt(memoryAmmount)
+                initialMemoryAvailability: Number.parseInt(memoryAmmount),
+                memorySize: Number.parseInt(memoryAmmount)
             }
         })
     }
