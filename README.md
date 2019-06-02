@@ -2,6 +2,10 @@
 
 Heroku: https://pure-journey-99339.herokuapp.com/<br>
 
+TODO -<br>
+- Fix Add Random Process to all algorithms
+- Move All algorithms to Actions
+
 Simulates a process scheduler (Operating Systems)
 Scheduler Algorithms
  - Shortest Job First (SJF)

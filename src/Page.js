@@ -1,14 +1,20 @@
 import React from 'react';
 
-const MemoryPage = ({processList}) => {
+const Page = ({processList}) => {
     const memoryPage = processList.map((process, index) => {
         return (
             <div className="memory-page_process" key={index}>
                 <div>
-                    PID: P{process.processId}
+                    Process ID: {process.processId}
                 </div>
                 <div>
-                    REQ: {process.requestSize} bytes
+                    Size: {process.requestSize} bytes
+                </div>
+                <div>
+                    Current Request: {process.currentRequestSize} bytes
+                </div>
+                <div>
+                    Type: {process.type}
                 </div>
             </div>
         )
@@ -21,4 +27,4 @@ const MemoryPage = ({processList}) => {
     )
 };
 
-export default MemoryPage;
+export default Page;

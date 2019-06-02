@@ -1,3 +1,131 @@
+// export function processExecutionPagesInHD(currentProcess) {
+//     let res = false
+
+//     for (let i = 0; i < diskPageList.length; i++) {
+//         for (let k = 0; k < diskPageList[i].processList; k++) {
+//             if(currentProcess.id === diskPageList[i].processList[k].processId) {
+//                 res.push(i)
+//                 break
+//             }
+//         }
+//     }
+
+//     return res
+// }
+
+export function hasProcessAlreadyStarted(memoryPageList, diskPageList, currentProcess) {
+    for (let i = 0; i < memoryPageList.length; i++) {
+        for (let k = 0; k < memoryPageList[i].processList; k++) {
+            if(currentProcess.id === memoryPageList[i].processList[k].processId) {
+                return true
+            }
+        }
+    }
+
+    for (let i = 0; i < diskPageList.length; i++) {
+        for (let k = 0; k < diskPageList[i].processList; k++) {
+            if(currentProcess.id === diskPageList[i].processList[k].processId) {
+                return true
+            }
+        }
+    }
+
+    return false
+}
+
+export function getFreeSuitableBlockFromPages(memoryPageList, requestSize) {
+    let minSize = requestSize
+    let bestFreeSuitableBlock = false
+    for (let i = 0; i < memoryPageList.length; i++) {
+        for (let k = 0; k < memoryPageList[i].processList; k++) {
+            if (memoryPageList[i].processList[k].type === 'free') {
+                let aux = memoryPageList[i].processList[k].requestSize - requestSize
+                if (aux < minSize) {
+                    minSize = aux
+                    bestFreeSuitableBlock = {pageRef: i, blockRef: k}
+                }
+            }
+        }
+    }
+
+    return bestFreeSuitableBlock
+}
+
+export function getPageSuitableForRemoval(memoryPageList, processIdsInExecution) {
+    for (let i = 0; i < memoryPageList.length; i++) {
+        let memoryPageProcessIds = memoryPageList[i].processList.map(process => process.id)
+        let found = memoryPageProcessIds.some(processId => processIdsInExecution.includes(processId))
+        if(!found) {
+            return i
+        }
+    }
+
+    return false
+}
+
+export function getAmmountOfFreeSpaceFromRemovablePagesFromMemory(memoryPageList, processIdsInExecution) {
+    let sum = 0
+    for (let i = 0; i < memoryPageList.length; i++) {
+        let memoryPageProcessIds = memoryPageList[i].processList.map(process => process.id)
+        let found = memoryPageProcessIds.some(processId => processIdsInExecution.includes(processId))
+        if(!found) {
+            sum += memoryPageList[i].currentPageSize 
+        }
+    }
+
+    return sum
+}
+
+export function freeCoreFromProcess(coreList, processId, quantum) {
+    for (let k = 0; k < coreList.length; k++) {
+        if (coreList[k].processInExecution.substring(1) === processId.toString()) {
+            coreList[k].processInExecution = 'none'
+            coreList[k].status = 'waiting for process'
+            coreList[k].currentQuantum = quantum
+        }
+    }
+
+    return coreList
+}
+
+export function removeProcessFromPages(memoryPageList, processId) {
+    for(let k = 0; k < memoryPageList.length; k++) {
+        for(let j = 0; j < memoryPageList[k].processList.length; j++) {
+            if(memoryPageList[k].processList[j].processId === processId) {
+                memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].processList[j].requestSize
+                memoryPageList[k].processList[j].processId = null
+                memoryPageList[k].processList[j].currentRequestSize = 0
+                memoryPageList[k].processList[j].type = 'free'
+            }
+        }
+    }
+    return memoryPageList
+}
+
+export function getProcessIdsInExecution(coreList) {
+    let arr = []
+    coreList.map(function(core) {
+        if (core.status === 'executing') {
+            arr.push(parseInt(core.processInExecution.substring(1)))
+        }
+    })
+
+    return arr
+}
+
+export function getFuturePercentage(memoryPageList, bytesAdded, memorySize) {
+    return (getOccupiedBytesInAllMemoryPages(memoryPageList) + bytesAdded) * 100 / memorySize
+}
+
+export function getOccupiedBytesInAllMemoryPages(memoryPageList) {
+    let currentOccupiedBytesInAllMemoryPages = 0
+    for (let i = 0; i < memoryPageList.length; i++) {
+        currentOccupiedBytesInAllMemoryPages += memoryPageList[i].currentPageSize
+    }
+
+    return currentOccupiedBytesInAllMemoryPages
+}
+
 export function getMaxIdFromProcessList(processList) {
     let max = 0
     for (let i = 0; i < processList.length; i++) {
