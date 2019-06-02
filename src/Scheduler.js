@@ -1293,14 +1293,14 @@ class Scheduler extends Component {
         let addedToExistingPage = false
         for (let i=0; i < memoryPageList.length; i++) {
             if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + process.bytes <= pageSize) {
-                memoryPageList[i].processList = [...memoryPageList[i].processList, {processId: process.id, requestSize: process.bytes}]
+                memoryPageList[i].processList = [...memoryPageList[i].processList, {blockId: memoryPageList[i].processList.length, processId: process.id, size: process.bytes, requestSize: process.bytes}]
                 memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + process.bytes
                 addedToExistingPage = true
                 break
             }
         }
         if (!addedToExistingPage) {
-            memoryPageList.push({id: memoryPageList.length, currentPageSize: process.bytes, processList: [{processId: process.id, requestSize: process.bytes}]})
+            memoryPageList.push({id: memoryPageList.length, currentPageSize: process.bytes, processList: [{blockId: 0, processId: process.id, size:process.bytes, requestSize: process.bytes}]})
         }
         this.setState({
             memoryPageList
@@ -1320,6 +1320,7 @@ class Scheduler extends Component {
     }
 
     render () {
+        const {} = this.props.algorithmData
         return (
             <div>
                 <div className="process-scheduler_info">
@@ -1360,13 +1361,19 @@ class Scheduler extends Component {
                     <MemoryPageList memoryPages={this.state.memoryPageList}/>
                 </div>
                 
-                <div>
-                    <div className="section-title">Memory</div>
-                    <div className={this.state.algorithm !== 'round-robin' ? "memory hide" : "memory" }>
-                        <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
-                        {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? "super block":"not allocated"}</div> : <div className="hide"></div>}
-                    </div>
-                </div>
+                {
+                    this.state.algorithmMemoryManager === 'bestFit' ? (
+                        <div></div>
+                    ) : (
+                        <div>
+                            <div className="section-title">Memory</div>
+                            <div className={this.state.algorithm !== 'round-robin' ? "memory hide" : "memory" }>
+                                <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
+                                {this.state.initialMemoryAvailability > 0 ? <div className="memory-initial">{this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? "super block":"not allocated"}</div> : <div className="hide"></div>}
+                            </div>
+                        </div>
+                    )
+                }
 
                 <div>
                     <div className="section-title">Finished Process List</div>
