@@ -11,7 +11,7 @@ const MemoryPageList = ({memoryPages}) => {
         return (
             <div className={memoryPage.type === 'free' ? 'memory-page free' : 'memory-page busy'} key={memoryPage.id}>
                 <div className="bold">Page {memoryPage.id} - {memoryPage.currentPageSize} bytes occupied</div>
-                <MemoryPage processList={memoryPage.processList}/>
+                <MemoryPage processList={memoryPage.blockList}/>
             </div>
         )
     });

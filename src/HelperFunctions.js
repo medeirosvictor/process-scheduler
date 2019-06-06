@@ -1,3 +1,51 @@
+export function getFreeBlocksOnMemory(memoryPageList) {
+    return memoryPageList.filter(function (block) {
+        return block.type === 'free'
+    })
+}
+
+export function getRemovablePagesFromRAM(memoryPageList, processIdsInExecution) {
+    let removablePagesIdsFromRAM = []
+    for (let i = 0; i < memoryPageList.length; i++) {
+        let memoryPageProcessIds = memoryPageList[i].blockList.map(process => process.id)
+        let found = memoryPageProcessIds.some(processId => processIdsInExecution.includes(processId))
+        if(!found) {
+            removablePagesIdsFromRAM.push(i)
+        }
+    }
+
+    return removablePagesIdsFromRAM
+}
+
+export function getProcessesIdsInExecution(processList) {
+    let processesIdsInExecution = []
+    processList.map(function(process) {
+        if(process.status === 'executing') {processesIdsInExecution.push(process.id)}
+    })
+    return processesIdsInExecution
+}
+
+export function getProcessPagesReferences(memoryPageList, diskPageList, process) {
+    let processPagesReferences = [];
+    for (let i = 0; i < memoryPageList.length; i++) {
+        for (let j = 0; j < memoryPageList[i].blockList.length; j++) {
+            if(memoryPageList[i].blockList[j].id === process.id) {
+                processPagesReferences.push({pageLocation: "memory", pageReference: i})
+            }
+        }
+    }
+
+    for (let i = 0; i < diskPageList.length; i++) {
+        for (let j = 0; j < diskPageList[i].processList.length; j++) {
+            if(diskPageList[i].processList[j].id === process.id) {
+                processPagesReferences.push({pageLocation: "disk", pageReference: i})
+            }
+        }
+    }
+
+    return processPagesReferences
+}
+
 export function getMaxIdFromProcessList(processList) {
     let max = 0
     for (let i = 0; i < processList.length; i++) {
