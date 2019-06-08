@@ -1,18 +1,14 @@
-import React from 'react';
+import React from 'react'
+import Page from './Page'
 
 const Disk = ({diskPages}) => {
     const diskPagesList = diskPages.map(diskPage => {
-        if (diskPage.size) {
-            return (
-                <div className={diskPage.type === 'free' ? 'disk-page free' : 'disk-page busy'}>
-                    <div>Block ID: {diskPage.id }</div>
-                    <div>Block PID: {diskPage.type === 'free' ? 'free' : 'P' + diskPage.pid }</div>
-                    <div>Size: { diskPage.size } bytes</div>
-                    <div>Request Size: { diskPage.reqsize } bytes</div>
-                </div>
-            )
-        }
-        return false
+        return (
+            <div className="disk-page" key={diskPage.id}>
+                <div className="bold">Page {diskPage.id} - {diskPage.currentPageSize} bytes occupied</div>
+                <Page blockList={diskPage.blockList}/>
+            </div>
+        )
     });
 
     return (

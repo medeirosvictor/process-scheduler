@@ -19,7 +19,7 @@ const initialState = Immutable.fromJS({
         occupiedMemoryPercentage: 0,
         memoryPageList: [],
         diskPageList: [],
-        diskSize: 20480,
+        diskSize: 40960,
         pageSize: 1024
     }
 })

@@ -1,5 +1,5 @@
-import React from 'react';
-import MemoryPage from './MemoryPage';
+import React from 'react'
+import Page from './Page'
 
 /*
 Attributes:
@@ -9,9 +9,9 @@ Attributes:
 const MemoryPageList = ({memoryPages}) => {
     const memoryPageList = memoryPages.map(memoryPage => {
         return (
-            <div className={memoryPage.type === 'free' ? 'memory-page free' : 'memory-page busy'} key={memoryPage.id}>
+            <div className={memoryPage.type === 'free' ? 'memory-page free' : 'memory-page busy'} key={"mpl"+memoryPage.id}>
                 <div className="bold">Page {memoryPage.id} - {memoryPage.currentPageSize} bytes occupied</div>
-                <MemoryPage processList={memoryPage.blockList}/>
+                <Page blockList={memoryPage.blockList}/>
             </div>
         )
     });

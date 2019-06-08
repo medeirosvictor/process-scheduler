@@ -192,7 +192,8 @@ text-center {
         }
     }
 
-    .memory {
+    .memory,
+    .disk {
         display: flex;
         flex-wrap: wrap;
         background-color: #fff;
@@ -245,6 +246,10 @@ text-center {
                 border: 1px solid lightsteelblue;
                 padding: 3px;
                 margin-bottom: 3px;
+
+                &.busy{
+                    border-color: #3CB371;
+                }
             }
         }
     }

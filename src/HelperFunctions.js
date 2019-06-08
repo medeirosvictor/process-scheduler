@@ -1,3 +1,93 @@
+export function getBestAvailableBlock() {
+
+}
+
+export function getNewPageId(memoryPageList, diskPageList) {
+    let highestMemoryId = -1
+    let highestDiskId = -1
+    for (let i = 0; i < memoryPageList.length; i++) {
+        let aux = memoryPageList[i].id
+        if (aux > highestMemoryId) {
+            highestMemoryId = aux
+        }
+    }
+    for (let i = 0; i < diskPageList.length; i++) {
+        let aux = diskPageList[i].id
+        if (aux > highestDiskId) {
+            highestDiskId = aux
+        }
+    }
+
+    let res = highestMemoryId > highestDiskId ? highestMemoryId : highestDiskId
+    return res
+}
+
+export function hasEnoughSpaceByMovingPagesToHD(removablePagesIdsFromRAM, memoryPageList, currentInitialMemory, processSize) {
+    // From the Removable Pages from Memory
+    // Which ones I have to remove to make space?
+    let totalSum = 0
+    let optimalPagesForRemoval = []
+    for (let k = 0; k < removablePagesIdsFromRAM.length; k++) {
+        if (currentInitialMemory + totalSum < processSize) {
+            totalSum += memoryPageList[removablePagesIdsFromRAM[k]].currentPageSize
+            optimalPagesForRemoval.push()
+        }
+    }
+    if (currentInitialMemory + totalSum >= processSize) {
+        return true
+    }
+    return false
+}
+
+export function getOccupiedPercentageInAllDiskPages(diskPageList, diskSize) {
+    let currentOccupiedBytesInAllDiskPages = getOccupiedBytesInAllDiskPages(diskPageList)
+    let percentage = (currentOccupiedBytesInAllDiskPages * 100) /  diskSize
+    percentage = Math.round( percentage * 10 ) / 10;
+
+    return percentage
+}
+
+export function getOccupiedBytesInAllDiskPages(diskPageList) {
+    let currentOccupiedBytesInAllDiskPages = 0
+    for (let i = 0; i < diskPageList.length; i++) {
+        currentOccupiedBytesInAllDiskPages += diskPageList[i].currentPageSize
+    }
+
+    return currentOccupiedBytesInAllDiskPages
+}
+
+export function getOccupiedPercentageInAllMemoryPages(memoryPageList, memorySize) {
+    let currentOccupiedBytesInAllMemoryPages = getOccupiedBytesInAllMemoryPages(memoryPageList)
+    let percentage = (currentOccupiedBytesInAllMemoryPages * 100) /  memorySize
+    percentage = Math.round( percentage * 10 ) / 10;
+
+    return percentage
+}
+
+export function getOccupiedBytesInAllMemoryPages(memoryPageList) {
+    let currentOccupiedBytesInAllMemoryPages = 0
+    for (let i = 0; i < memoryPageList.length; i++) {
+        currentOccupiedBytesInAllMemoryPages += memoryPageList[i].currentPageSize
+    }
+
+    return currentOccupiedBytesInAllMemoryPages
+}
+
+
+export function abortProcess(processList, abortedProcessList, process) {
+    let abortedProcess = processList.filter(function(p) {
+        return p.id === process.id
+    })
+    processList = processList.filter(function(p) {
+        return p.id !== process.id
+    })
+
+    abortedProcess[0].status = 'aborted: out of memory'
+    abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+
+    return [processList, abortedProcessList]
+}
+
 export function getFreeBlocksOnMemory(memoryPageList) {
     return memoryPageList.filter(function (block) {
         return block.type === 'free'
@@ -7,7 +97,7 @@ export function getFreeBlocksOnMemory(memoryPageList) {
 export function getRemovablePagesFromRAM(memoryPageList, processIdsInExecution) {
     let removablePagesIdsFromRAM = []
     for (let i = 0; i < memoryPageList.length; i++) {
-        let memoryPageProcessIds = memoryPageList[i].blockList.map(process => process.id)
+        let memoryPageProcessIds = memoryPageList[i].blockList.map(process => process.processId)
         let found = memoryPageProcessIds.some(processId => processIdsInExecution.includes(processId))
         if(!found) {
             removablePagesIdsFromRAM.push(i)
@@ -21,6 +111,7 @@ export function getProcessesIdsInExecution(processList) {
     let processesIdsInExecution = []
     processList.map(function(process) {
         if(process.status === 'executing') {processesIdsInExecution.push(process.id)}
+        return process
     })
     return processesIdsInExecution
 }
@@ -29,15 +120,15 @@ export function getProcessPagesReferences(memoryPageList, diskPageList, process)
     let processPagesReferences = [];
     for (let i = 0; i < memoryPageList.length; i++) {
         for (let j = 0; j < memoryPageList[i].blockList.length; j++) {
-            if(memoryPageList[i].blockList[j].id === process.id) {
+            if(memoryPageList[i].blockList[j].processId === process.id) {
                 processPagesReferences.push({pageLocation: "memory", pageReference: i})
             }
         }
     }
 
     for (let i = 0; i < diskPageList.length; i++) {
-        for (let j = 0; j < diskPageList[i].processList.length; j++) {
-            if(diskPageList[i].processList[j].id === process.id) {
+        for (let j = 0; j < diskPageList[i].blockList.length; j++) {
+            if(diskPageList[i].blockList[j].processId === process.id) {
                 processPagesReferences.push({pageLocation: "disk", pageReference: i})
             }
         }
