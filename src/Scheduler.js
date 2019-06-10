@@ -8,7 +8,7 @@ import { getAlgorithmData } from './Selector'
 import { connect } from 'react-redux'
 import { createPropsSelector } from 'reselect-immutable-helpers'
 import { receiveAlgorithmData } from './Actions'
-import { getBestAvailableBlock, getNewPageId, hasEnoughSpaceByMovingPagesToHD, getOccupiedPercentageInAllDiskPages, getOccupiedPercentageInAllMemoryPages, isMemoryOverThreshold, abortProcess, getRemovablePagesFromRAM, getFreeBlocksOnMemory, getProcessesIdsInExecution, isPageOnMemory, getProcessPagesReferences, sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
+import { getProcessIdsInPage, getBestAvailableBlock, getNewPageId, hasEnoughSpaceByMovingPagesToHD, getOccupiedPercentageInAllDiskPages, getOccupiedPercentageInAllMemoryPages, getRemovablePagesFromRAM, getFreeBlocksOnMemory, getProcessesIdsInExecution, getProcessPagesReferences, sortList, getAvailableCoreAmmount, randomIntFromInterval, getAvailableProcessAmmount, getAvailableCore, getMaxIdFromProcessList} from './HelperFunctions'
 import Memory from './Memory';
 import Disk from './Disk';
 import MemoryPageList from './MemoryPageList';
@@ -156,7 +156,7 @@ class Scheduler extends Component {
             let { 
                 coreList, processList, initialMemoryAvailability,
                 finishedProcessList, abortedProcessList, diskPageList,
-                memoryPageList, pageSize, diskSize
+                memoryPageList
             } = this.state
 
             let availableCores = getAvailableCoreAmmount(coreList)
@@ -188,34 +188,79 @@ class Scheduler extends Component {
                                 if (currentProcess.bytes <= initialMemoryAvailability && processPagesReferences.length === 0) {
                                     this.startProcessExecution(currentProcess, i, j)
                                     availableCores--
-                                    this.addBlockToMemoryPage(currentProcess, memoryPageList, pageSize, processList, diskPageList)
+                                    this.addBlockToMemoryPage(currentProcess)
 
                                     break
                                 }
 
                                 //Process already allocated before? Lets move all of his pages to the RAM
                                 else if (processPagesReferences.length) {
-                                    //Check if all of his pages are on the memory AND we can remove some pages from RAM to make space
                                     let processPagesInHD = processPagesReferences.filter(function(reference) {
-                                        return reference.pageReference === 'disk'
+                                        return reference.pageLocation === 'disk'
                                     })
 
                                     let removablePagesIdsFromRAM = getRemovablePagesFromRAM(memoryPageList, processesIdsInExecution)
 
-                                    //Temos paginas removiveis da RAM suficientes para trazer as paginas do HD?
-                                    if(removablePagesIdsFromRAM.length >= processPagesInHD.length) {
-                                        let numberOfPagesToBringFromHD = processPagesInHD.length
-                                        for (let page = 0; page < processPagesReferences.length; page++) {
-                                            let processesIdsInExecution = getProcessesIdsInExecution(processList)
-                                            //bring pages
+                                    let ammountOfBytesToBringFromHD = processPagesReferences.map(item => item.pageSize)
+                                    .reduce((prev, curr) => prev + curr, 0)
+
+                                    let enoughSpaceByMovingPagesToHD = hasEnoughSpaceByMovingPagesToHD(removablePagesIdsFromRAM, memoryPageList, initialMemoryAvailability, ammountOfBytesToBringFromHD)
+
+                                    let processPagesInHDIds = processPagesInHD.map(item => item.pageReference)
+
+                                    //Do we already have space
+                                    if (ammountOfBytesToBringFromHD <= initialMemoryAvailability) {
+                                        //just bring everything
+                                        for (let k = 0; k < diskPageList.length; k++) {
+                                            if (processPagesInHDIds.includes(diskPageList[k].id)) {
+                                                initialMemoryAvailability -= diskPageList[k].currentPageSize
+                                                memoryPageList = [...memoryPageList, diskPageList[k]]
+                                            }
                                         }
-                                    } else {
-                                        //abort process
-                                        debugger
+                            
+                                        diskPageList = diskPageList.filter((diskPage) => processPagesInHDIds.includes(diskPage.id) === false)
+                                        availableCores--
+                                        this.startProcessExecution(currentProcess, i, j)
+                                        this.setState({
+                                            memoryPageList,
+                                            diskPageList,
+                                            initialMemoryAvailability
+                                        })
                                     }
 
-                                    availableCores--
-                                    this.startProcessExecution(currentProcess.id, i, j)
+                                    //Can/Do we have to make space?
+                                    //Temos paginas removiveis da RAM suficientes para trazer as paginas do HD?
+                                    else if(enoughSpaceByMovingPagesToHD && removablePagesIdsFromRAM.length >= processPagesInHD.length) {
+                                        let processesInMovingPages = []
+                                        for (let k = 0; k < memoryPageList.length; k++) {
+                                            if (removablePagesIdsFromRAM.includes(memoryPageList[k].id) && memoryPageList[k].currentPageSize >= 0) {
+                                                initialMemoryAvailability += memoryPageList[k].currentPageSize
+                                                diskPageList = [...diskPageList, memoryPageList[k]]
+                                            }
+                                        }
+
+                                        for (let page = 0; page < processPagesReferences.length; page++) {
+                                            initialMemoryAvailability -= processPagesReferences[page].pageSize
+                                            memoryPageList = [...memoryPageList, diskPageList[processPagesReferences[page].pageReference]]
+                                            let arr = getProcessIdsInPage(diskPageList[processPagesReferences[page].pageReference])
+                                            processesInMovingPages = [...processesInMovingPages, ...arr]
+                                        }
+        
+                                        memoryPageList = memoryPageList.filter((memoryPage) => removablePagesIdsFromRAM.includes(memoryPage.id) === false)
+                                        
+                                        diskPageList = diskPageList.filter((page) => processesInMovingPages.includes(page.id) === false)
+
+                                        this.setState({memoryPageList, diskPageList})
+
+                                        availableCores--
+                                        this.startProcessExecution(currentProcess, i, j)
+                                    }
+
+                                    //abort process
+                                    else {
+                                        this.abortProcessAndCleanPages(currentProcess)
+                                    }
+
                                     break
                                 }
 
@@ -237,36 +282,40 @@ class Scheduler extends Component {
                                         initialMemoryAvailability
                                     })
 
-                                    this.startProcessExecution(currentProcess.id, i, j)
+                                    this.startProcessExecution(currentProcess, i, j)
                                     availableCores--
 
                                     //create page list or add to existing page list
-                                    this.addBlockToMemoryPage(currentProcess, memoryPageList, pageSize, processList, diskPageList)
+                                    this.addBlockToMemoryPage(currentProcess)
                                     break
                                 }
                                 
                                 //Do we have freeblocks?
                                 else if (freeBlocksOnMemory.length) {
                                     //find best block and allocate there
-                                    debugger
-                                    let bestBlock = getBestAvailableBlock()
+                                    let bestBlock = getBestAvailableBlock(freeBlocksOnMemory, currentProcess)
                                     if (bestBlock) {
-
+                                        memoryPageList = memoryPageList.map(function(page) {
+                                            if (page.id === bestBlock.memoryPageId) {
+                                                page.blockList[bestBlock.blockIndex].currentRequestSize = currentProcess.bytes
+                                                page.blockList[bestBlock.blockIndex].processId = currentProcess.id
+                                                page.blockList[bestBlock.blockIndex].type = 'busy'
+                                            }
+                                            return page
+                                        })
+                                        this.setState({memoryPageList})
+                                        this.startProcessExecution(currentProcess)
                                     } else {
                                         //abort process
+                                        this.abortProcess(currentProcess)
+                                        j = -1
                                     }
+
+                                    break
                                 }
                                 //Nothing else to do, abort the process
                                 else {
-                                    let abortedProcess = abortProcess(processList, abortedProcessList, currentProcess)
-                                    processList = abortedProcess[0]
-                                    abortedProcessList = abortedProcess[1]
-                                    this.setState({
-                                        processList,
-                                        abortedProcessList
-                                    })
-                    
-                                    debugger
+                                    this.abortProcess(currentProcess)
                                     j = -1
                                 }
                             }
@@ -275,7 +324,6 @@ class Scheduler extends Component {
                 }
                 this.setState({
                     coreList,
-                    processList,
                     abortedProcessList,
                     memoryPageList,
                     diskPageList
@@ -297,25 +345,20 @@ class Scheduler extends Component {
                              for(let k = 0; k < memoryPageList.length; k++) {
                                 for(let j = 0; j < memoryPageList[k].blockList.length; j++) {
                                     if(memoryPageList[k].blockList[j].processId === currentProcess.id) {
-                                        memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].blockList[j].size
                                         memoryPageList[k].blockList[j].processId = null
                                         memoryPageList[k].blockList[j].currentRequestSize = 0
                                         memoryPageList[k].blockList[j].type = 'free'
                                     }
                                 }
                             }
-                            debugger
+
+                            this.setState({
+                                memoryPageList,
+                                coreList
+                            })
                         }
                     }
                 }
-
-                this.setState({
-                    diskPageList,
-                    memoryPageList,
-                    processList,
-                    coreList
-                })
-
 
                 // Remove finished Processes
                 let finishedProcessListId = []
@@ -330,8 +373,6 @@ class Scheduler extends Component {
                     for(let i = 0; i < memoryPageList.length; i++) {
                         for(let j = 0; j < memoryPageList[i].blockList.length; j++) {
                             if(finishedProcessListId.includes(memoryPageList[i].blockList[j].processId)) {
-                                debugger
-                                memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize - memoryPageList[i].blockList[j].size
                                 memoryPageList[i].blockList[j].processId = null
                                 memoryPageList[i].blockList[j].currentRequestSize = 0
                                 memoryPageList[i].blockList[j].type = 'free'
@@ -375,34 +416,32 @@ class Scheduler extends Component {
 
                 // Updates Executing Processes
                 for (let i = 0; i < processList.length; i++) {
+                    diskPageList = this.state.diskPageList
+                    memoryPageList = this.state.memoryPageList
+                    processList = this.state.processList
+                    abortedProcessList = this.state.abortedProcessList
+                    initialMemoryAvailability = this.state.initialMemoryAvailability
+
                     if(processList[i].status === 'executing') {
                         let currentProcess = processList[i]
+                        let freeBlocksPagesReferences = getFreeBlocksOnMemory(memoryPageList)
+                        let processesIdsInExecution = getProcessesIdsInExecution(processList)
+                        let removablePagesIdsFromRAM = getRemovablePagesFromRAM(memoryPageList, processesIdsInExecution)
                         processList[i].remainingExecutionTime--
 
                         // checking for random requests
-                        let requestRdm = randomIntFromInterval(1, 5);
+                        let requestRdm = randomIntFromInterval(1, 6);
                         if (requestRdm === 1) {
                             let request = {id: processList[i].id, bytes: randomIntFromInterval(32, 512)}
-                            let freeBlocksPagesReferences = getFreeBlocksOnMemory(memoryPageList)
-                            let processesIdsInExecution = getProcessesIdsInExecution(processList)
-                            let removablePagesIdsFromRAM = getRemovablePagesFromRAM(memoryPageList, processesIdsInExecution)
+                            
                             let enoughSpaceByMovingPagesToHD = hasEnoughSpaceByMovingPagesToHD(removablePagesIdsFromRAM, memoryPageList, initialMemoryAvailability, request)
-                            diskPageList = this.state.diskPageList
-                            memoryPageList = this.state.memoryPageList
-                            processList = this.state.processList
-                            abortedProcessList = this.state.abortedProcessList
-                            initialMemoryAvailability = this.state.initialMemoryAvailability
+                            
 
                             // Allocate request in best available block
                             if (initialMemoryAvailability > 0 && request.bytes <= initialMemoryAvailability) {
-                                this.addBlockToMemoryPage(request, memoryPageList, pageSize, processList, diskPageList)
+                                this.addBlockToMemoryPage(request)
                             }
 
-                            else if (freeBlocksPagesReferences.length) {
-                                debugger
-                                // Find best available block
-                            } 
-                            
                             else if (enoughSpaceByMovingPagesToHD) {
                                 //move pages to HD
                                 for (let k = 0; k < memoryPageList.length; k++) {
@@ -420,28 +459,33 @@ class Scheduler extends Component {
                                     initialMemoryAvailability
                                 })
 
-                                this.addBlockToMemoryPage(request, memoryPageList, pageSize, processList, diskPageList)
-                                debugger
+                                this.addBlockToMemoryPage(request)
                             }
-                            
+
+                            // Find best free block
+                            else if (freeBlocksPagesReferences.length) {
+                                let bestBlock = getBestAvailableBlock(freeBlocksPagesReferences, request)
+                                memoryPageList = memoryPageList.map(function(page) {
+                                    if (page.id === bestBlock.memoryPageId) {
+                                        page.blockList[bestBlock.blockIndex].currentRequestSize = request.bytes
+                                        page.blockList[bestBlock.blockIndex].processId = request.id
+                                    }
+                                    return page
+                                })
+                                this.setState({memoryPageList})
+                                break
+                            }
+
                             else {
-                                this.abortProcessAndCleanPages(memoryPageList, diskPageList, currentProcess)
-                                debugger
+                                this.abortProcessAndCleanPages(currentProcess)
                             }
                         }
                     }
                 }
 
-                // Updates Quantum on working Cores
-                for (let i = 0; i < coreList.length; i++) {
-                    if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
-                        coreList[i].currentQuantum--
-                        coreList[i].processInExecutionRemainingTime--
-                    }
-                }
+                this.updateQuantumOnWorkingCores()
 
                 this.setState({
-                    coreList,
                     processList,
                     memoryPageList,
                     diskPageList,
@@ -1181,10 +1225,20 @@ class Scheduler extends Component {
         })
     }
 
-    abortProcess = (process) => {
-        let processList = this.state.processList
-        let abortedProcessList = this.state.abortedProcessList
+    updateQuantumOnWorkingCores = () => {
         let coreList = this.state.coreList
+        for (let i = 0; i < coreList.length; i++) {
+            if(coreList[i].status === 'executing' && coreList[i].currentQuantum > 0) {
+                coreList[i].currentQuantum--
+                coreList[i].processInExecutionRemainingTime--
+            }
+        }
+
+        this.setState({coreList})
+    }
+
+    abortProcess = (process) => {
+        let { processList, abortedProcessList, coreList } = this.state
         
         let abortedProcess = processList.filter(function(p) {
             return p.id === process.id
@@ -1211,11 +1265,11 @@ class Scheduler extends Component {
     }
 
     //Release (free) all blocks from memory and disk pages form that process0
-    abortProcessAndCleanPages = (memoryPageList, diskPageList, process) => { 
+    abortProcessAndCleanPages = (process) => { 
+        let { memoryPageList, diskPageList } = this.state
         for(let k = 0; k < memoryPageList.length; k++) {
             for(let j = 0; j < memoryPageList[k].blockList.length; j++) {
                 if(memoryPageList[k].blockList[j].processId === process.id) {
-                    memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].blockList[j].size
                     memoryPageList[k].blockList[j].processId = null
                     memoryPageList[k].blockList[j].currentRequestSize = 0
                     memoryPageList[k].blockList[j].type = 'free'
@@ -1226,7 +1280,6 @@ class Scheduler extends Component {
         for(let k = 0; k < diskPageList.length; k++) {
             for(let j = 0; j < diskPageList[k].blockList.length; j++) {
                 if(diskPageList[k].blockList[j].processId === process.id) {
-                    diskPageList[k].currentPageSize = diskPageList[k].currentPageSize - diskPageList[k].blockList[j].size
                     diskPageList[k].blockList[j].processId = null
                     diskPageList[k].blockList[j].currentRequestSize = 0
                     diskPageList[k].blockList[j].type = 'free'
@@ -1240,10 +1293,10 @@ class Scheduler extends Component {
         this.abortProcess(process)
     }
 
-    addBlockToMemoryPage = (process, memoryPageList, pageSize, processList, diskPageList) => {
+    addBlockToMemoryPage = (process) => {
+        let { initialMemoryAvailability, processList, memoryPageList, pageSize, diskPageList } = this.state
         let addedToExistingPage = false
         let pageId = getNewPageId(memoryPageList, diskPageList) + 1
-        let initialMemoryAvailability = this.state.initialMemoryAvailability
         initialMemoryAvailability -= process.bytes
         for (let i=0; i < memoryPageList.length; i++) {
             if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + process.bytes <= pageSize) {
@@ -1260,10 +1313,6 @@ class Scheduler extends Component {
                 memoryPageList.push({id: pageId, currentPageSize: process.bytes, blockList: [{processId: process.id, size: process.bytes, type: 'busy', currentRequestSize: process.bytes}]})
             }
         }
-        this.setState({
-            memoryPageList,
-            initialMemoryAvailability
-        })
 
         //check if now we have more than 80% of the memory occupied
         let processesIdsInExecution = getProcessesIdsInExecution(processList)
@@ -1274,22 +1323,20 @@ class Scheduler extends Component {
         if (occupiedPercentage > 80 && removablePagesIdsFromRAM.length) {
 
             for (let k = 0; k < memoryPageList.length; k++) {
-                if (removablePagesIdsFromRAM.includes(memoryPageList[k].id) && memoryPageList[k].currentPageSize >= 0) {
+                if (removablePagesIdsFromRAM.includes(memoryPageList[k].id)) {
                     initialMemoryAvailability += memoryPageList[k].currentPageSize
                     diskPageList = [...diskPageList, memoryPageList[k]]
                 }
             }
 
-            memoryPageList = memoryPageList.filter((memoryPage) => removablePagesIdsFromRAM.includes(memoryPage.id) === false)
-            
-            debugger
-            this.setState({
-                memoryPageList,
-                diskPageList,
-                initialMemoryAvailability
-            })
-
+            memoryPageList = memoryPageList.filter((memoryPage) => removablePagesIdsFromRAM.includes(memoryPage.id) === false)    
         }
+
+        this.setState({
+            memoryPageList,
+            diskPageList,
+            initialMemoryAvailability
+        })
     }
 
     getOccupiedPercentageInAllMemoryPages = () => {

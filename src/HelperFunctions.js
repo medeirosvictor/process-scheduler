@@ -1,5 +1,17 @@
-export function getBestAvailableBlock() {
+export function getBestAvailableBlock(freeBlocksPagesReferences, request) {
+    let bestBlock
+    let smallestDiff = 1024
+    for (let q = 0; q < freeBlocksPagesReferences.length; q++) {
+        if (freeBlocksPagesReferences[q].blockSize >= request.bytes) {
+            let aux = freeBlocksPagesReferences[q].blockSize - request.bytes
+            if (aux < smallestDiff) {
+                smallestDiff = aux
+                bestBlock = freeBlocksPagesReferences[q]
+            }
+        }
+    }
 
+    return bestBlock
 }
 
 export function getNewPageId(memoryPageList, diskPageList) {
@@ -28,10 +40,9 @@ export function hasEnoughSpaceByMovingPagesToHD(removablePagesIdsFromRAM, memory
     let totalSum = 0
     let optimalPagesForRemoval = []
     for (let k = 0; k < removablePagesIdsFromRAM.length; k++) {
-        if (currentInitialMemory + totalSum < processSize) {
-            totalSum += memoryPageList[removablePagesIdsFromRAM[k]].currentPageSize
-            optimalPagesForRemoval.push()
-        }
+        let memoryPage = memoryPageList.filter((page) => page.id === removablePagesIdsFromRAM[k]) 
+        totalSum = totalSum + memoryPage[0].currentPageSize
+        optimalPagesForRemoval.push()
     }
     if (currentInitialMemory + totalSum >= processSize) {
         return true
@@ -73,7 +84,6 @@ export function getOccupiedBytesInAllMemoryPages(memoryPageList) {
     return currentOccupiedBytesInAllMemoryPages
 }
 
-
 export function abortProcess(processList, abortedProcessList, process) {
     let abortedProcess = processList.filter(function(p) {
         return p.id === process.id
@@ -89,9 +99,17 @@ export function abortProcess(processList, abortedProcessList, process) {
 }
 
 export function getFreeBlocksOnMemory(memoryPageList) {
-    return memoryPageList.filter(function (block) {
-        return block.type === 'free'
-    })
+    let freeBlocksOnMemory = []
+    for (let i = 0; i < memoryPageList.length; i++){
+        memoryPageList[i].blockList.map(function (block, index) {
+            if (block.type === 'free') {
+                freeBlocksOnMemory.push({memoryPageId: memoryPageList[i].id, blockSize: block.size, blockIndex: index})
+            }
+            return block.type === 'free'
+        })
+    }
+
+    return freeBlocksOnMemory
 }
 
 export function getRemovablePagesFromRAM(memoryPageList, processIdsInExecution) {
@@ -100,11 +118,15 @@ export function getRemovablePagesFromRAM(memoryPageList, processIdsInExecution) 
         let memoryPageProcessIds = memoryPageList[i].blockList.map(process => process.processId)
         let found = memoryPageProcessIds.some(processId => processIdsInExecution.includes(processId))
         if(!found) {
-            removablePagesIdsFromRAM.push(i)
+            removablePagesIdsFromRAM.push(memoryPageList[i].id)
         }
     }
 
     return removablePagesIdsFromRAM
+}
+
+export function getProcessIdsInPage(page) {
+    return page.blockList.map(process => process.processId)
 }
 
 export function getProcessesIdsInExecution(processList) {
@@ -121,7 +143,8 @@ export function getProcessPagesReferences(memoryPageList, diskPageList, process)
     for (let i = 0; i < memoryPageList.length; i++) {
         for (let j = 0; j < memoryPageList[i].blockList.length; j++) {
             if(memoryPageList[i].blockList[j].processId === process.id) {
-                processPagesReferences.push({pageLocation: "memory", pageReference: i})
+                processPagesReferences.push({pageLocation: "memory", pageReference: memoryPageList[i].id, pageSize: memoryPageList[i].currentPageSize})
+                break
             }
         }
     }
@@ -129,7 +152,8 @@ export function getProcessPagesReferences(memoryPageList, diskPageList, process)
     for (let i = 0; i < diskPageList.length; i++) {
         for (let j = 0; j < diskPageList[i].blockList.length; j++) {
             if(diskPageList[i].blockList[j].processId === process.id) {
-                processPagesReferences.push({pageLocation: "disk", pageReference: i})
+                processPagesReferences.push({pageLocation: "disk", pageReference: diskPageList[i].id, pageSize: diskPageList[i].currentPageSize})
+                break
             }
         }
     }
