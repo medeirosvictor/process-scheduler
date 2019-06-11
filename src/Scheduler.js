@@ -191,6 +191,7 @@ class Scheduler extends Component {
                                 //CRIAR FUNCAO DE SWAP
                                 //CRIAR FUNCAO DE REMOCAO DE PROCESSOS FINALIZADOS
                                 //CRIAR FUNCAO DE REMOCAO DE PROCESSOS COM QUANTUM ZERADO
+                                //CRIAR PAGINAS NO COMECO, DIVINDIDO 
 
                                 if (currentProcess.bytes <= initialMemoryAvailability && processPagesReferences.length === 0) {
                                     this.startProcessExecution(currentProcess, i, j)
@@ -1400,15 +1401,15 @@ class Scheduler extends Component {
                 {this.state.algorithm === 'priority-queue' ? <ProcessQueues processes={this.state.processList}/> : <Process processes={this.state.processList}/>}
 
                 <div>
-                    <div className="section-title">HD Pages - Size {this.state.diskSize} bytes - Occupied Percentage {getOccupiedPercentageInAllDiskPages(diskPageList, diskSize)}%</div>
-                    <Disk diskPages={this.state.diskPageList}/>
+                    <div className="section-title bold">Memory Pages - Size {this.state.memorySize} bytes - Occupied Percentage {getOccupiedPercentageInAllMemoryPages(memoryPageList, memorySize)}%</div>
+                    <MemoryPageList memoryPages={this.state.memoryPageList}/>
                 </div>
 
                 <div>
-                    <div className="section-title">Memory Pages - Size {this.state.memorySize} bytes - Occupied Percentage {getOccupiedPercentageInAllMemoryPages(memoryPageList, memorySize)}%</div>
-                    <MemoryPageList memoryPages={this.state.memoryPageList}/>
+                    <div className="section-title bold">HD Pages - Size {this.state.diskSize} bytes - Occupied Percentage {getOccupiedPercentageInAllDiskPages(diskPageList, diskSize)}%</div>
+                    <Disk diskPages={this.state.diskPageList}/>
                 </div>
-                
+
                 {
                     this.state.algorithmMemoryManager === 'bestFit' ? (
                         <div></div>
