@@ -61,7 +61,7 @@ class AlgorithmSelector extends Component {
     generateProcessList = (processAmmount) => {
         let processes = this.props.algorithmData.processList
         for (let i = 0; i < processAmmount; i++) {
-            let totalExecutionTime = randomIntFromInterval(10, 30)
+            let totalExecutionTime = randomIntFromInterval(5, 25)
             let priority = randomIntFromInterval(0, 3)
             let bytesToExecute = randomIntFromInterval(32, 1024)
             let process = {id: i, name: 'P'+i, status: 'ready', totalExecutionTime: totalExecutionTime, remainingExecutionTime: totalExecutionTime, priority: priority, bytes: bytesToExecute}

@@ -165,7 +165,7 @@ class Scheduler extends Component {
             if (processList.length) {
                 for (let i = 0; i < coreList.length; i++) {
                     if(coreList[i].status === 'waiting for process' && availableCores > 0) {
-                        for (let j = 0; j < processList.length; j++) {
+                        for (let j = 0; j < this.getLength(this.state.processList); j++) {
                             if(processList[j].status === 'ready') {
                                 
                                 // BEST FIT
@@ -239,16 +239,16 @@ class Scheduler extends Component {
                                             }
                                         }
 
+                                        let processPagesInHDIds = getProcessIdsInPage(processPagesInHD)
                                         for (let page = 0; page < processPagesReferences.length; page++) {
                                             initialMemoryAvailability -= processPagesReferences[page].pageSize
-                                            memoryPageList = [...memoryPageList, diskPageList[processPagesReferences[page].pageReference]]
-                                            let arr = getProcessIdsInPage(diskPageList[processPagesReferences[page].pageReference])
-                                            processesInMovingPages = [...processesInMovingPages, ...arr]
+                                            let movingDiskPage = diskPageList.filter((page) => page.id === processPagesReferences[page].pageReference)
+                                            memoryPageList = [...memoryPageList, movingDiskPage[0]]
                                         }
         
                                         memoryPageList = memoryPageList.filter((memoryPage) => removablePagesIdsFromRAM.includes(memoryPage.id) === false)
                                         
-                                        diskPageList = diskPageList.filter((page) => processesInMovingPages.includes(page.id) === false)
+                                        diskPageList = diskPageList.filter((page) => processPagesInHDIds.includes(page.id) === false)
 
                                         this.setState({memoryPageList, diskPageList})
 
@@ -259,6 +259,7 @@ class Scheduler extends Component {
                                     //abort process
                                     else {
                                         this.abortProcessAndCleanPages(currentProcess)
+                                        processList = this.state.processList
                                     }
 
                                     break
@@ -304,10 +305,11 @@ class Scheduler extends Component {
                                             return page
                                         })
                                         this.setState({memoryPageList})
-                                        this.startProcessExecution(currentProcess)
+                                        this.startProcessExecution(currentProcess, i, j)
                                     } else {
                                         //abort process
                                         this.abortProcess(currentProcess)
+                                        processList = this.state.processList
                                         j = -1
                                     }
 
@@ -345,6 +347,7 @@ class Scheduler extends Component {
                              for(let k = 0; k < memoryPageList.length; k++) {
                                 for(let j = 0; j < memoryPageList[k].blockList.length; j++) {
                                     if(memoryPageList[k].blockList[j].processId === currentProcess.id) {
+                                        memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].blockList[j].size
                                         memoryPageList[k].blockList[j].processId = null
                                         memoryPageList[k].blockList[j].currentRequestSize = 0
                                         memoryPageList[k].blockList[j].type = 'free'
@@ -373,6 +376,7 @@ class Scheduler extends Component {
                     for(let i = 0; i < memoryPageList.length; i++) {
                         for(let j = 0; j < memoryPageList[i].blockList.length; j++) {
                             if(finishedProcessListId.includes(memoryPageList[i].blockList[j].processId)) {
+                                memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize - memoryPageList[i].blockList[j].size
                                 memoryPageList[i].blockList[j].processId = null
                                 memoryPageList[i].blockList[j].currentRequestSize = 0
                                 memoryPageList[i].blockList[j].type = 'free'
@@ -415,7 +419,7 @@ class Scheduler extends Component {
                 })
 
                 // Updates Executing Processes
-                for (let i = 0; i < processList.length; i++) {
+                for (let i = 0; i < this.getLength(this.state.processList); i++) {
                     diskPageList = this.state.diskPageList
                     memoryPageList = this.state.memoryPageList
                     processList = this.state.processList
@@ -1235,6 +1239,10 @@ class Scheduler extends Component {
         }
 
         this.setState({coreList})
+    }
+
+    getLength = (list) => {
+        return list.length
     }
 
     abortProcess = (process) => {
