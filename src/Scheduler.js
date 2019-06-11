@@ -185,6 +185,13 @@ class Scheduler extends Component {
                                 
                                 //Initial start case, no blocks free yet
                                 //Do we still have initial memory available and this process hasnt started yet? To make a block with the perfect size
+
+                                //FIXES
+                                //NAO POSSO MOVER AS PAGINAS PARA O HD, COPIAR CONTEUDO E LIMPAR A DA RAM
+                                //CRIAR FUNCAO DE SWAP
+                                //CRIAR FUNCAO DE REMOCAO DE PROCESSOS FINALIZADOS
+                                //CRIAR FUNCAO DE REMOCAO DE PROCESSOS COM QUANTUM ZERADO
+
                                 if (currentProcess.bytes <= initialMemoryAvailability && processPagesReferences.length === 0) {
                                     this.startProcessExecution(currentProcess, i, j)
                                     availableCores--
@@ -290,7 +297,7 @@ class Scheduler extends Component {
                                     this.addBlockToMemoryPage(currentProcess)
                                     break
                                 }
-                                
+
                                 //Do we have freeblocks?
                                 else if (freeBlocksOnMemory.length) {
                                     //find best block and allocate there
@@ -315,6 +322,7 @@ class Scheduler extends Component {
 
                                     break
                                 }
+
                                 //Nothing else to do, abort the process
                                 else {
                                     this.abortProcess(currentProcess)
