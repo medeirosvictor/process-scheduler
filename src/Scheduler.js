@@ -192,13 +192,6 @@ class Scheduler extends Component {
                                 //Initial start case, no blocks free yet
                                 //Do we still have initial memory available and this process hasnt started yet? To make a block with the perfect size
 
-                                //FIXES
-                                //NAO POSSO MOVER AS PAGINAS PARA O HD, COPIAR CONTEUDO E LIMPAR A DA RAM
-                                //CRIAR FUNCAO DE SWAP
-                                //CRIAR FUNCAO DE REMOCAO DE PROCESSOS FINALIZADOS
-                                //CRIAR FUNCAO DE REMOCAO DE PROCESSOS COM QUANTUM ZERADO
-                                //CRIAR PAGINAS NO COMECO, DIVINDIDO 
-
                                 if (currentProcess.bytes <= initialMemoryAvailability && processPagesReferences.length === 0) {
                                     [coreList, processList] = startProcessExecution(currentProcess, coreList, processList, i, j, quantum)
 
