@@ -4,7 +4,13 @@ const Processes = ({processes}) => {
     const processList = processes.map(process => {
         return (
             <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
-                <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}</div>
+                <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}
+                {process.status === "executing" ? 
+                    (<div className="lds-dual-ring"></div>)
+                    :
+                    (<div></div>)
+                }
+                </div>
                 <div>Status: {process.status}</div>
                 <div>TET: {process.totalExecutionTime}s</div>
                 <div>RET: {process.remainingExecutionTime}s</div>

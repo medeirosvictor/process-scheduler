@@ -1,3 +1,187 @@
+export function abortProcess(process, coreList, processList, memoryPageList, diskPageList, abortedProcessList, quantum) {
+    let abortedProcess = processList.filter(function(p) {
+        return p.id === process.id
+    })
+    processList = processList.filter(function(p) {
+        return p.id !== process.id
+    })
+
+    for (let k = 0; k < coreList.length; k++) {
+        if (coreList[k].processInExecution.substring(1) === process.id.toString()) {
+            coreList[k].processInExecution = 'none'
+            coreList[k].status = 'waiting for process'
+            coreList[k].currentQuantum = quantum
+        }
+    }
+
+    for(let k = 0; k < memoryPageList.length; k++) {
+        for(let j = 0; j < memoryPageList[k].blockList.length; j++) {
+            if(memoryPageList[k].blockList[j].processId === process.id) {
+                memoryPageList[k].blockList[j].processId = null
+                memoryPageList[k].blockList[j].currentRequestSize = 0
+                memoryPageList[k].blockList[j].type = 'free'
+            }
+        }
+    }
+
+    for(let k = 0; k < diskPageList.length; k++) {
+        for(let j = 0; j < diskPageList[k].blockList.length; j++) {
+            if(diskPageList[k].blockList[j].processId === process.id) {
+                diskPageList[k].blockList[j].processId = null
+                diskPageList[k].blockList[j].currentRequestSize = 0
+                diskPageList[k].blockList[j].type = 'free'
+            }
+        }
+    }
+
+    abortedProcess[0].status = 'aborted: out of memory'
+    abortedProcessList = [...abortedProcessList, abortedProcess[0]]
+    debugger
+    return [
+        coreList,
+        processList,
+        memoryPageList,
+        diskPageList,
+        abortedProcessList,
+    ]
+}
+export function removeFinishedProcess(coreList, processList, memoryPageList, finishedProcessList, quantum) {
+    //removing from the core
+    let removed = false
+    for (let i = 0; i < coreList.length; i++) {
+        let runningProcessId = coreList[i].processInExecution.substring(1)
+        if (runningProcessId !== 'none'.substring(1)) {
+            let currentProcess = processList.find(process => process.id.toString() === runningProcessId)
+            if(currentProcess.remainingExecutionTime === 0) {
+                removed = true;
+                coreList[i].processInExecution = 'none'
+                coreList[i].status = 'waiting for process'
+                coreList[i].currentQuantum = quantum
+                coreList[i].processInExecutionRemainingTime = -1
+
+                 // clean memory pages because for it to be executing it must be all there
+                 for(let k = 0; k < memoryPageList.length; k++) {
+                    for(let j = 0; j < memoryPageList[k].blockList.length; j++) {
+                        if(memoryPageList[k].blockList[j].processId === currentProcess.id) {
+                            memoryPageList[k].currentPageSize = memoryPageList[k].currentPageSize - memoryPageList[k].blockList[j].size
+                            memoryPageList[k].blockList[j].processId = null
+                            memoryPageList[k].blockList[j].currentRequestSize = 0
+                            memoryPageList[k].blockList[j].type = 'free'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (!removed) {
+        return false
+    }
+
+    //removing from the process list
+    // Remove finished Processes
+    let finishedProcessListId = []
+    let currentFinishedProcesses = processList.filter(function(process) {
+        if (process.remainingExecutionTime === 0) {
+            finishedProcessListId.push(process.id)
+            process.status = 'finished'
+        }
+        return process.remainingExecutionTime === 0
+    })
+
+    if (finishedProcessListId.length) {
+        for(let i = 0; i < memoryPageList.length; i++) {
+            for(let j = 0; j < memoryPageList[i].blockList.length; j++) {
+                if(finishedProcessListId.includes(memoryPageList[i].blockList[j].processId)) {
+                    memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize - memoryPageList[i].blockList[j].currentRequestSize
+                    memoryPageList[i].blockList[j].processId = null
+                    memoryPageList[i].blockList[j].currentRequestSize = 0
+                    memoryPageList[i].blockList[j].type = 'free'
+                }
+            }
+        }
+    }
+
+    finishedProcessList = [...finishedProcessList, ...currentFinishedProcesses]
+
+    processList = processList.filter(function(process) {
+        return process.remainingExecutionTime > 0
+    })
+    debugger
+    return [coreList, processList, memoryPageList, finishedProcessList]
+}
+export function startProcessExecution(currentProcess, coreList, processList, coreListRef, processListRef, quantum) {
+    processList[processListRef].status = 'executing'
+    coreList[coreListRef].processInExecution = 'P' + currentProcess.id
+    coreList[coreListRef].status = 'executing'
+    coreList[coreListRef].quantum = quantum
+    coreList[coreListRef].processInExecutionRemainingTime = processList[processListRef].remainingExecutionTime
+    return [coreList, processList]
+}
+
+export function createInitialPagesList(pageList, pageSize, pageContainerSize) {
+    let numberOfPages = pageContainerSize / pageSize
+    for (let i = 0; i < numberOfPages; i++) {
+        pageList.push({
+            id: i, 
+            currentPageSize: 0, 
+            blockList: []
+        })
+    }
+
+    return pageList
+}
+
+export function addBlockToMemoryPage(process, initialMemoryAvailability, processList, memoryPageList, pageSize, diskPageList, memorySize) {
+    initialMemoryAvailability -= process.bytes
+    for (let i=0; i < memoryPageList.length; i++) {
+        if (memoryPageList[i].currentPageSize < pageSize && memoryPageList[i].currentPageSize + process.bytes <= pageSize) {
+            memoryPageList[i].blockList = [...memoryPageList[i].blockList, {processId: process.id, size: process.bytes, type: 'busy', currentRequestSize: process.bytes}]
+            memoryPageList[i].currentPageSize = memoryPageList[i].currentPageSize + process.bytes
+            break
+        }
+    }
+
+    //check if now we have more than 80% of the memory occupied
+    let processesIdsInExecution = getProcessesIdsInExecution(processList)
+    let occupiedPercentage = getOccupiedPercentageInAllMemoryPages(memoryPageList, memorySize)
+    let removablePagesIdsFromRAM = getRemovablePagesFromRAM(memoryPageList, processesIdsInExecution)
+
+    //see if we can move stuff to HD
+    if (occupiedPercentage > 80 && removablePagesIdsFromRAM.length) {
+        [ memoryPageList, diskPageList, initialMemoryAvailability] = swapFromRAMToHD(memoryPageList, diskPageList, removablePagesIdsFromRAM, initialMemoryAvailability)
+    }
+
+    return [memoryPageList, diskPageList, initialMemoryAvailability]
+}
+
+export function swapFromRAMToHD(memoryPageList, diskPageList, removablePagesIdsFromRAM, initialMemoryAvailability) {
+    for (let k = 0; k < memoryPageList.length; k++) {
+        if (removablePagesIdsFromRAM.includes(memoryPageList[k].id) && memoryPageList[k].currentPageSize >= 0) {
+            initialMemoryAvailability += memoryPageList[k].currentPageSize
+            for (let j = 0; j < diskPageList.length; j++) {
+                if (diskPageList[j].currentPageSize === 0 || diskPageList[j].currentPageSize + memoryPageList[k].currentPageSize <= 1024) {
+                    diskPageList[j].blockList = [...diskPageList[j].blockList, ...memoryPageList[k].blockList]
+                    diskPageList[j].currentPageSize += memoryPageList[k].currentPageSize
+                    memoryPageList[k].blockList = []
+                    memoryPageList[k].currentPageSize = 0
+                    break
+                }
+            }
+        }
+    }
+
+    return [memoryPageList, diskPageList, initialMemoryAvailability]
+}
+
+export function swapFromHDToRAM(memoryPageList, diskPageList, pagesReferences, removablePagesIdsFromRAM) {
+    
+}
+
+export function movePagesFromHDToRAM() {
+
+}
+
 export function getBestAvailableBlock(freeBlocksPagesReferences, request) {
     let bestBlock
     let smallestDiff = 1024
@@ -82,20 +266,6 @@ export function getOccupiedBytesInAllMemoryPages(memoryPageList) {
     }
 
     return currentOccupiedBytesInAllMemoryPages
-}
-
-export function abortProcess(processList, abortedProcessList, process) {
-    let abortedProcess = processList.filter(function(p) {
-        return p.id === process.id
-    })
-    processList = processList.filter(function(p) {
-        return p.id !== process.id
-    })
-
-    abortedProcess[0].status = 'aborted: out of memory'
-    abortedProcessList = [...abortedProcessList, abortedProcess[0]]
-
-    return [processList, abortedProcessList]
 }
 
 export function getFreeBlocksOnMemory(memoryPageList) {

@@ -4,7 +4,13 @@ const Core = ({cores}) => {
     const coreList = cores.map(core => {
         return (
             <div className={core.status === 'executing' ? 'core executing': 'core'} key={"p" + core.id}>
-                <div className="core_name">{core.name}</div>
+                <div className="core_name">{core.name} 
+                {core.status === "executing" ? 
+                    (<div className="lds-dual-ring"></div>)
+                    :
+                    (<div></div>)
+                    }
+                </div>
                 <div>Status: {core.status}</div>
                 <div className="core_process-ret">PIE: {core.processInExecution}</div>
                 <div className={core.processInExecutionRemainingTime >= 0 ? '' : 'hide'}>PIE Remaining Time: {core.processInExecutionRemainingTime}s</div>

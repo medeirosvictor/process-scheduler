@@ -122,7 +122,7 @@ text-center {
 
             &.finished {
                 background-color: #ebebeb;
-                border-color: #d3ffd5;
+                border-color: #a7ffab;
                 min-width: 220px;
                 
                 &.aborted {
@@ -138,7 +138,6 @@ text-center {
 
             &.executing {
                 font-weight: bold;
-                background-color: #d3ffd5;
             }
 
             & .inserted {
@@ -186,7 +185,7 @@ text-center {
 
                 .core_process-ret {
                     color: black;
-                    background-color: #d3ffd5;
+                    background-color: #a7ffab;
                 }
             }
         }
@@ -243,12 +242,11 @@ text-center {
             min-width: 210px;
 
             &_process {
-                border: 1px solid lightsteelblue;
                 padding: 3px;
                 margin-bottom: 3px;
 
                 &.busy{
-                    border-color: #3CB371;
+                    background-color: #a7ffab;
                 }
             }
         }
@@ -266,3 +264,38 @@ text-center {
         
     }
 }
+
+.lds-dual-ring {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    position: relative;
+}
+
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 15px;
+    height: 15px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    border-color: #fff transparent #fff transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+    left: 50%;
+    position: absolute;
+}
+
+.process .lds-dual-ring:after {
+    border-color: #13bf1b transparent #13bf1b transparent;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+  
