@@ -1,7 +1,7 @@
 export function arePagesOnMemory(process, diskPageList) {
     for (let k = 0; k < diskPageList.length; k++) {
         for (let q = 0; q < diskPageList[k].blockList.length; q++) {
-            if (diskPageList[k].blockList[q].id === process.id) {
+            if (diskPageList[k].blockList[q].processId === process.id) {
                 return false
             }
         }

@@ -402,10 +402,12 @@ class Scheduler extends Component {
                             let processPagesInHD = processPagesReferences.filter(function(reference) {
                                 return reference.pageLocation === 'disk'
                             })
-                            let processPagesInHDIds = processPagesInHD.map(item => item.pageReference)
-
-                            [memoryPageList, diskPageList, initialMemoryAvailability] = swapFromHDToRAM(memoryPageList, diskPageList, processPagesInHDIds, initialMemoryAvailability)
-                            this.setState({memoryPageList, diskPageList, initialMemoryAvailability})
+                            if (processPagesInHD.length) {
+                                let processPagesInHDIds = processPagesInHD.map(item => item.pageReference)
+    
+                                [memoryPageList, diskPageList, initialMemoryAvailability] = swapFromHDToRAM(memoryPageList, diskPageList, processPagesInHDIds, initialMemoryAvailability)
+                                this.setState({memoryPageList, diskPageList, initialMemoryAvailability})
+                            }
                         }
 
                         processList[i].remainingExecutionTime--
