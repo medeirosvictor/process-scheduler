@@ -158,7 +158,7 @@ class AlgorithmSelector extends Component {
 
                     <div className={this.props.algorithmData.algorithm === 'round-robin' ? '' : 'hide'}>
                         <div>
-                            <input className="algorithm-selector_input input-field" type="number" name="memoryAmmount" id="memoryAmmount" placeholder="Memory Ammount" onChange={this.handleChange} required={this.props.algorithmData.algorithm === 'round-robin' ? true : false}/>
+                            <input className="algorithm-selector_input input-field" type="number" name="memoryAmmount" id="memoryAmmount" placeholder="Memory Ammount" min="1024" onChange={this.handleChange} required={this.props.algorithmData.algorithm === 'round-robin' ? true : false}/>
                         </div>
                         <div>
                             <input type="radio" name="algorithmMemoryManager" id="bestFit" value="bestFit" required={this.props.algorithmData.algorithm === 'round-robin' ? true : false} onChange={this.handleChange} />

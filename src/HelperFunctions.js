@@ -1,9 +1,26 @@
+export function arePagesOnMemory(process, diskPageList) {
+    for (let k = 0; k < diskPageList.length; k++) {
+        for (let q = 0; q < diskPageList[k].blockList.length; q++) {
+            if (diskPageList[k].blockList[q].id === process.id) {
+                return false
+            }
+        }
+    }
+
+    return true
+}
+export function getFreeMemoryAVailability(memoryPageList, memorySize) {
+    let memoryAvailability = memorySize
+    for (let i = 0; i < memoryPageList.length; i++) {
+        memoryAvailability -= memoryPageList[i].currentPageSize
+    }
+
+    return memoryAvailability
+}
+
 export function abortProcess(process, coreList, processList, memoryPageList, diskPageList, abortedProcessList, quantum) {
     let abortedProcess = processList.filter(function(p) {
         return p.id === process.id
-    })
-    processList = processList.filter(function(p) {
-        return p.id !== process.id
     })
 
     for (let k = 0; k < coreList.length; k++) {
@@ -36,13 +53,17 @@ export function abortProcess(process, coreList, processList, memoryPageList, dis
 
     abortedProcess[0].status = 'aborted: out of memory'
     abortedProcessList = [...abortedProcessList, abortedProcess[0]]
-    debugger
+
+    processList = processList.filter(function(p) {
+        return p.id !== process.id
+    })
+
     return [
         coreList,
         processList,
         memoryPageList,
         diskPageList,
-        abortedProcessList,
+        abortedProcessList
     ]
 }
 export function removeFinishedProcess(coreList, processList, memoryPageList, finishedProcessList, quantum) {
@@ -107,7 +128,7 @@ export function removeFinishedProcess(coreList, processList, memoryPageList, fin
     processList = processList.filter(function(process) {
         return process.remainingExecutionTime > 0
     })
-    debugger
+
     return [coreList, processList, memoryPageList, finishedProcessList]
 }
 export function startProcessExecution(currentProcess, coreList, processList, coreListRef, processListRef, quantum) {
@@ -158,9 +179,9 @@ export function addBlockToMemoryPage(process, initialMemoryAvailability, process
 export function swapFromRAMToHD(memoryPageList, diskPageList, removablePagesIdsFromRAM, initialMemoryAvailability) {
     for (let k = 0; k < memoryPageList.length; k++) {
         if (removablePagesIdsFromRAM.includes(memoryPageList[k].id) && memoryPageList[k].currentPageSize >= 0) {
-            initialMemoryAvailability += memoryPageList[k].currentPageSize
             for (let j = 0; j < diskPageList.length; j++) {
                 if (diskPageList[j].currentPageSize === 0 || diskPageList[j].currentPageSize + memoryPageList[k].currentPageSize <= 1024) {
+                    initialMemoryAvailability += memoryPageList[k].currentPageSize
                     diskPageList[j].blockList = [...diskPageList[j].blockList, ...memoryPageList[k].blockList]
                     diskPageList[j].currentPageSize += memoryPageList[k].currentPageSize
                     memoryPageList[k].blockList = []
@@ -174,8 +195,23 @@ export function swapFromRAMToHD(memoryPageList, diskPageList, removablePagesIdsF
     return [memoryPageList, diskPageList, initialMemoryAvailability]
 }
 
-export function swapFromHDToRAM(memoryPageList, diskPageList, pagesReferences, removablePagesIdsFromRAM) {
-    
+export function swapFromHDToRAM(memoryPageList, diskPageList, processPagesInHDIds, initialMemoryAvailability) {
+    for (let k = 0; k < diskPageList.length; k++) {
+        if (processPagesInHDIds.includes(diskPageList[k].id)) {
+            for (let j = 0; j < memoryPageList.length; j++) {
+                if (memoryPageList[j].currentPageSize === 0 || memoryPageList[j].currentPageSize + diskPageList[k].currentPageSize <= 1024) {
+                    initialMemoryAvailability -= diskPageList[k].currentPageSize
+                    memoryPageList[j].blockList = [...memoryPageList[j].blockList, ...diskPageList[k].blockList]
+                    memoryPageList[j].currentPageSize += diskPageList[k].currentPageSize
+                    diskPageList[k].blockList = []
+                    diskPageList[k].currentPageSize = 0
+                    break
+                }
+            }                    
+        }
+    }
+
+    return [memoryPageList, diskPageList, initialMemoryAvailability]
 }
 
 export function movePagesFromHDToRAM() {
