@@ -240,17 +240,24 @@ text-center {
             padding: 5px;
             margin: 3px;
             min-width: 210px;
-
-            &_process {
-                padding: 3px;
-                margin-bottom: 3px;
-
-                &.busy{
-                    background-color: #a7ffab;
-                }
-            }
         }
     }
+
+    .page-block {
+        padding: 3px;
+        margin-bottom: 3px;
+
+        &.busy{
+            background-color: #a7ffab;
+        }
+    }
+
+    .disk-page {
+        .page-block.busy{
+            background-color: #b1c8fd;
+        }
+    }
+    
 
     .disk-page_container,
     .memory-page_container {

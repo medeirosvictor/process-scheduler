@@ -174,13 +174,13 @@ text-center {
       padding: 5px;
       margin: 3px;
       min-width: 210px; }
-      .App .memory-page_process,
-      .App .disk-page_process {
-        padding: 3px;
-        margin-bottom: 3px; }
-        .App .memory-page_process.busy,
-        .App .disk-page_process.busy {
-          background-color: #a7ffab; }
+  .App .page-block {
+    padding: 3px;
+    margin-bottom: 3px; }
+    .App .page-block.busy {
+      background-color: #a7ffab; }
+  .App .disk-page .page-block.busy {
+    background-color: #b1c8fd; }
   .App .disk-page_container,
   .App .memory-page_container {
     display: flex;

@@ -3,7 +3,7 @@ import React from 'react'
 const Page = ({blockList}) => {
     const memoryPage = blockList.map((block, index) => {
         return (
-            <div className={block.type === 'free'? "memory-page_process free" : "memory-page_process busy"} key={index}>
+            <div className={block.type === 'free'? "page-block free" : "page-block busy"} key={index}>
                 <div>
                     Process ID: {block.processId !== null ? 'P'+block.processId : 'None'}
                 </div>
@@ -21,7 +21,7 @@ const Page = ({blockList}) => {
     });
 
     return (
-        <div className="memory-page_process-list">
+        <div className="page-block-list">
             { memoryPage.length ? memoryPage : <div className="hide">No memory pages available</div> }
         </div>
     )
