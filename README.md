@@ -1,6 +1,5 @@
 # Process Scheduler
 
-Heroku: https://pure-journey-99339.herokuapp.com/<br>
 
 Simulates a process scheduler (Operating Systems)
 Scheduler Algorithms
