@@ -5,7 +5,7 @@
   "dependencies": {
     "immutable": "^4.0.0-rc.12",
     "jquery": "^3.3.1",
-    "react": "^16.8.3",
+    "react": "^16.14.0",
     "react-dom": "^16.13.0",
     "react-redux": "^6.0.1",
     "react-router-dom": "^6.22.1",
