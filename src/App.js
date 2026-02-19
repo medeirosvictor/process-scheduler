@@ -1,21 +1,26 @@
 import React, { Component } from 'react'
 import AlgorithmSelector from './AlgorithmSelector'
 import Scheduler from './Scheduler'
+import ErrorBoundary from './ErrorBoundary'
 import { Provider } from 'react-redux'
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 class App extends Component {
     render() {
         return (
             <Provider store={this.props.store}>
                 <BrowserRouter>
-                    <div className="App">
-                        <h1 className="header">Process Scheduler</h1>
-                        <div className="scheduler-app">
-                            <Route exact path='/' component={AlgorithmSelector} />
-                            <Route path='/scheduler' component={Scheduler} />
+                    <ErrorBoundary>
+                        <div className="App">
+                            <h1 className="header">Process Scheduler</h1>
+                            <div className="scheduler-app">
+                                <Switch>
+                                    <Route exact path='/' component={AlgorithmSelector} />
+                                    <Route path='/scheduler' component={Scheduler} />
+                                </Switch>
+                            </div>
                         </div>
-                    </div>
+                    </ErrorBoundary>
                 </BrowserRouter>
             </Provider>
         );
