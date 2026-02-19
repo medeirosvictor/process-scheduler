@@ -5,7 +5,7 @@
   "homepage": "https://medeirosvictor.github.io/process-scheduler",
   "dependencies": {
     "jquery": "^3.3.1",
-    "react": "^16.14.0",
+    "react": "^19.2.4",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.3.4",
     "react-scripts": "5.0.1",
