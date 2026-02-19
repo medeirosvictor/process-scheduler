@@ -2,13 +2,13 @@ import React, { Component } from 'react'
 import AlgorithmSelector from './AlgorithmSelector'
 import Scheduler from './Scheduler'
 import ErrorBoundary from './ErrorBoundary'
-import { Provider } from 'react-redux'
+import { AlgorithmProvider } from './AlgorithmContext'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
 
 class App extends Component {
     render() {
         return (
-            <Provider store={this.props.store}>
+            <AlgorithmProvider>
                 <BrowserRouter>
                     <ErrorBoundary>
                         <div className="App">
@@ -22,9 +22,9 @@ class App extends Component {
                         </div>
                     </ErrorBoundary>
                 </BrowserRouter>
-            </Provider>
-        );
+            </AlgorithmProvider>
+        )
     }
 }
 
-export default App;
+export default App

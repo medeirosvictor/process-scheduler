@@ -4,10 +4,7 @@ import ProcessQueues from './ProcessQueues'
 import Core from './Core'
 import FinishedProcessList from './FinishedProcessList'
 import AbortedProcessList from './AbortedProcessList'
-import { getAlgorithmData } from './Selector'
-import { connect } from 'react-redux'
-import { createPropsSelector } from 'reselect-immutable-helpers'
-import { receiveAlgorithmData } from './Actions'
+import { AlgorithmContext } from './AlgorithmContext'
 import {
     getOccupiedPercentageInAllDiskPages,
     getOccupiedPercentageInAllMemoryPages,
@@ -28,16 +25,18 @@ import {
 } from './algorithms'
 
 class Scheduler extends Component {
-    constructor(props) {
-        super(props)
-        if (this.props.algorithmData.algorithm === '') {
+    static contextType = AlgorithmContext
+
+    constructor(props, context) {
+        super(props, context)
+        if (context.algorithmData.algorithm === '') {
             this.props.history.push('/')
         }
 
         this._timeoutId = null
         this._unmounted = false
 
-        const algoData = { ...this.props.algorithmData }
+        const algoData = { ...context.algorithmData }
         algoData.finishedProcessList = []
         algoData.abortedProcessList = []
         if (algoData.algorithm === 'round-robin' && algoData.algorithmMemoryManager === 'bestFit') {
@@ -205,12 +204,4 @@ class Scheduler extends Component {
     }
 }
 
-const mapDispatchToProps = {
-    receiveAlgorithmData
-}
-
-const mapStateToProps = createPropsSelector({
-    algorithmData: getAlgorithmData
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Scheduler)
+export default Scheduler

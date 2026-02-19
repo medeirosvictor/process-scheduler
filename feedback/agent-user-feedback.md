@@ -177,3 +177,33 @@
 ### Build verification
 - `npm run build` ✅ — compiles clean
 - `npm start` ✅ — dev server starts without errors
+
+---
+
+## 7. Redux → Context Migration
+
+### Done ✅
+
+#### Replaced Redux + Immutable.js stack with React Context
+- **Created `src/AlgorithmContext.js`** — single context provider with `algorithmData` state, `setAlgorithmData()`, and `resetAlgorithmData()` methods. ~50 lines replacing 4 boilerplate files.
+- **Rewrote `AlgorithmSelector.js`** — uses `static contextType = AlgorithmContext` instead of `connect(mapStateToProps, mapDispatchToProps)`. Calls `context.setAlgorithmData()` directly instead of dispatching Redux actions.
+- **Rewrote `Scheduler.js`** — reads initial data from `context.algorithmData` instead of `props.algorithmData` via Redux. No more `connect()` HOC.
+- **Rewrote `App.js`** — `<AlgorithmProvider>` replaces `<Provider store={store}>`. No Redux store prop needed.
+- **Simplified `index.js`** — no longer imports or passes `Store`.
+
+#### Deleted Redux boilerplate files
+- `src/Store.js` — Redux store with Immutable + thunk + devtools
+- `src/Reducer.js` — single reducer with handleActions + Immutable.fromJS
+- `src/Actions.js` — createAction boilerplate
+- `src/Selector.js` — reselect selector
+
+#### Removed 7 dependencies
+- `redux`, `react-redux`, `redux-actions`, `redux-thunk` — state management
+- `immutable` — Immutable.js (was wrapping/unwrapping for no benefit)
+- `reselect`, `reselect-immutable-helpers` — selector memoization (single trivial selector)
+
+### Impact
+- **4 files deleted**, 1 new file (`AlgorithmContext.js`) added
+- **7 npm packages removed** from dependencies
+- Data flow is now explicit: `AlgorithmSelector` writes to context → `Scheduler` reads from context once in constructor
+- No more Immutable.js `fromJS()`/`mergeDeep` → plain JS objects throughout
