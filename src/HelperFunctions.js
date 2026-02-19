@@ -214,10 +214,6 @@ export function swapFromHDToRAM(memoryPageList, diskPageList, processPagesInHDId
     return [memoryPageList, diskPageList, initialMemoryAvailability]
 }
 
-export function movePagesFromHDToRAM() {
-
-}
-
 export function getBestAvailableBlock(freeBlocksPagesReferences, request) {
     let bestBlock
     let smallestDiff = 1024

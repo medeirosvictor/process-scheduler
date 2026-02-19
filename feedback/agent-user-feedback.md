@@ -144,7 +144,36 @@
 - `npm start` ✅ — "Compiled successfully!" (previous eslint warnings resolved by CRA re-compilation)
 
 
-**Phase 3: Refactor (optional, longer term)**
+**Phase 3: Refactor** ✅
 8. Extract scheduling algorithms into separate modules
 9. Consolidate state management (Redux vs local state)
 10. Remove dead code, deduplicate logic
+
+---
+
+## 6. Phase 3 Resolution Log
+
+### Done ✅
+
+#### 8. Extracted scheduling algorithms into separate modules
+- **`src/algorithms/sjf.js`** — SJF algorithm (`initSJF`, `algorithmSJF`)
+- **`src/algorithms/roundRobinBestFit.js`** — Round Robin Best Fit (`algorithmRoundRobinBestFit`) with extracted helpers `handleExistingProcessPages`, `updateExecutingProcesses`, `updateQuantumOnWorkingCores`
+- **`src/algorithms/roundRobinMergeFit.js`** — Round Robin Merge Fit (`algorithmRoundRobinMergeFit`) with extracted `mergeBlocks`, `findBestFreeBlock`, `abortMergeFitProcess` — **eliminates 3x copy-pasted merge block logic**
+- **`src/algorithms/priorityQueue.js`** — Priority Queue Round Robin (`algorithmPriorityQueueRoundRobin`) with extracted `getPriorityQuantum`
+- **`src/algorithms/index.js`** — barrel export for all algorithms
+- **`src/Scheduler.js`** reduced from **1325 lines → 216 lines** (84% reduction). Now only contains lifecycle, render, and handlers.
+- All algorithms receive the `scheduler` component instance as parameter, using `scheduler.state` / `scheduler.setState` / `scheduler.props` for state access.
+
+#### 9. State management — deferred
+- Redux is still used as a one-time data-passing mechanism between `AlgorithmSelector` → `Scheduler`. Full consolidation would require significant rearchitecting (moving to hooks + context, or committing to Redux for all runtime state). Deferred as low-priority since it works correctly.
+
+#### 10. Removed dead code, deduplicated logic
+- **Deleted `src/MemoryPage.js`** — unused component (never imported anywhere). Referenced `process.requestSize` which doesn't exist in the data model.
+- **Deleted `gulpfile.js`** — leftover from Phase 1, no longer needed (CRA 5 handles SCSS natively).
+- **Removed empty `movePagesFromHDToRAM()`** from `HelperFunctions.js` — stub function with no implementation or callers.
+- **Deduplicated `ProcessQueues.js`** — 4 identical copy-pasted JSX blocks (one per priority level) replaced with a single `.map()` loop. Reduced from 92 → 33 lines (64% reduction).
+- **Deduplicated merge block logic** — the 3x copy-pasted block merging code in `algorithmRoundRobinMergeFit` is now a single `mergeBlocks()` function called in 2 places.
+
+### Build verification
+- `npm run build` ✅ — compiles clean
+- `npm start` ✅ — dev server starts without errors
