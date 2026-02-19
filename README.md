@@ -45,6 +45,10 @@ Up to **64 cores** run in parallel. Each core tracks its current process, remain
 ### Memory & Disk
 Simulated RAM is divided into **pages** of configurable size. When RAM fills up, pages belonging to idle processes are **swapped to disk** (simulated HD). When those processes need to run again, their pages are swapped back. This mirrors how real operating systems use virtual memory to run more processes than physical RAM can hold.
 
+## Live Demo
+
+**https://medeirosvictor.github.io/process-scheduler**
+
 ## Getting Started
 
 ```bash
@@ -56,6 +60,9 @@ npm start
 
 # Production build
 npm run build
+
+# Deploy to GitHub Pages
+npm run deploy
 ```
 
 ## Configuration
@@ -76,24 +83,25 @@ Click **Start Scheduler Simulation** to watch the scheduler run. You can add ran
 - **React 16** with class components
 - **React Context** for configuration state
 - **React Router v5** for navigation
-- **SASS** (via CRA 5 / Dart Sass)
+- **Vite** for bundling and dev server
+- **SASS** (Dart Sass)
 
 ## Project Structure
 
 ```
 src/
-├── AlgorithmContext.js    # React Context for config hand-off
-├── AlgorithmSelector.js   # Configuration form UI
-├── Scheduler.js           # Orchestrator — lifecycle, render, delegates to algorithms/
-├── algorithms/            # Scheduling algorithm modules
-│   ├── sjf.js             # Shortest Job First
-│   ├── roundRobinBestFit.js   # Round Robin + Best Fit memory
-│   ├── roundRobinMergeFit.js  # Round Robin + Merge Fit memory
-│   └── priorityQueue.js       # Priority Queue + Round Robin
-├── HelperFunctions.js     # Shared memory/process utilities
-├── Core.js                # Core display component
-├── Process.js             # Process display component
-├── ProcessQueues.js       # Priority queue display component
-├── Memory.js / Disk.js    # Memory and disk visualization
-└── ErrorBoundary.js       # Catches runtime errors gracefully
+├── AlgorithmContext.jsx    # React Context for config hand-off
+├── AlgorithmSelector.jsx   # Configuration form UI
+├── Scheduler.jsx           # Orchestrator — lifecycle, render, delegates to algorithms/
+├── algorithms/             # Scheduling algorithm modules
+│   ├── sjf.js              # Shortest Job First
+│   ├── roundRobinBestFit.js    # Round Robin + Best Fit memory
+│   ├── roundRobinMergeFit.js   # Round Robin + Merge Fit memory
+│   └── priorityQueue.js        # Priority Queue + Round Robin
+├── HelperFunctions.js      # Shared memory/process utilities
+├── Core.jsx                # Core display component
+├── Process.jsx             # Process display component
+├── ProcessQueues.jsx       # Priority queue display component
+├── Memory.jsx / Disk.jsx   # Memory and disk visualization
+└── ErrorBoundary.jsx       # Catches runtime errors gracefully
 ```
