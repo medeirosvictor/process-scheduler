@@ -2,21 +2,18 @@
   "name": "process-scheduler",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://medeirosvictor.github.io/process-scheduler",
   "dependencies": {
-    "immutable": "^4.0.0-rc.12",
     "jquery": "^3.3.1",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
-    "react-redux": "^6.0.1",
-    "react-router-dom": "^4.3.1",
-    "react-scripts": "2.1.5",
-    "redux": "^4.0.1",
-    "redux-actions": "^2.6.5",
-    "redux-thunk": "^2.3.0",
-    "reselect": "^4.0.0",
-    "reselect-immutable-helpers": "^1.2.2"
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-router-dom": "^5.3.4",
+    "react-scripts": "5.0.1",
+    "sass": "^1.71.0"
   },
   "scripts": {
+    "predeploy": "react-scripts build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -32,11 +29,6 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "gulp": "^4.0.0",
-    "gulp-cli": "^2.0.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-minify": "^3.1.0",
-    "gulp-sass": "^4.0.2",
-    "node-sass": "^4.11.0"
+    "gh-pages": "^6.3.0"
   }
 }
