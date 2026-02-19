@@ -3,13 +3,13 @@ import AlgorithmSelector from './AlgorithmSelector'
 import Scheduler from './Scheduler'
 import ErrorBoundary from './ErrorBoundary'
 import { AlgorithmProvider } from './AlgorithmContext'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { HashRouter, Route, Switch } from 'react-router-dom'
 
 class App extends Component {
     render() {
         return (
             <AlgorithmProvider>
-                <BrowserRouter>
+                <HashRouter>
                     <ErrorBoundary>
                         <div className="App">
                             <h1 className="header">Process Scheduler</h1>
@@ -21,7 +21,7 @@ class App extends Component {
                             </div>
                         </div>
                     </ErrorBoundary>
-                </BrowserRouter>
+                </HashRouter>
             </AlgorithmProvider>
         )
     }
