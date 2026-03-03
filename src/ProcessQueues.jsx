@@ -12,16 +12,16 @@ const ProcessQueues = ({ processes }) => {
                     </div>
                     {processes[level].map(process => (
                         <div
-                            className={process.status === 'executing' ? 'process executing' : 'process'}
+                            className={`process ${process.status === 'executing' ? 'executing' : ''}`}
                             key={'p' + process.id}
                         >
-                            <div className={process.inserted ? 'process_name inserted' : 'process_name'}>
+                            <div className={`process_name ${process.inserted ? 'inserted' : ''}`}>
                                 {'P' + process.id}
                             </div>
-                            <div>Status: {process.status}</div>
-                            <div>TET: {process.totalExecutionTime}s</div>
-                            <div>RET: {process.remainingExecutionTime}s</div>
-                            <div>Priority: {process.priority}</div>
+                            <div className="process-detail">Status: {process.status}</div>
+                            <div className="process-detail">TET: {process.totalExecutionTime}s</div>
+                            <div className="process-detail">RET: {process.remainingExecutionTime}s</div>
+                            <div className="process-detail">Priority: {process.priority}</div>
                         </div>
                     ))}
                 </div>

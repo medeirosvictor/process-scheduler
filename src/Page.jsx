@@ -3,26 +3,21 @@ import React from 'react'
 const Page = ({blockList}) => {
     const memoryPage = blockList.map((block, index) => {
         return (
-            <div className={block.type === 'free'? "page-block free" : "page-block busy"} key={index}>
-                <div>
-                    Process ID: {block.processId !== null ? 'P'+block.processId : 'None'}
-                </div>
-                <div>
-                    Size: {block.size} bytes
-                </div>
-                <div>
-                    Current Request: {block.currentRequestSize} bytes
-                </div>
-                <div>
-                    Type: {block.type}
-                </div>
+            <div 
+                className={`page-block ${block.type === 'free' ? 'free' : 'busy'}`} 
+                key={index}
+            >
+                <div className="block-info">Process ID: {block.processId !== null ? 'P' + block.processId : 'None'}</div>
+                <div className="block-info">Size: {block.size} bytes</div>
+                <div className="block-info">Current Request: {block.currentRequestSize} bytes</div>
+                <div className="block-info">Type: {block.type}</div>
             </div>
         )
     });
 
     return (
         <div className="page-block-list">
-            { memoryPage.length ? memoryPage : <div className="hide">No memory pages available</div> }
+            {memoryPage.length > 0 && memoryPage}
         </div>
     )
 };

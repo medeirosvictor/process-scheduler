@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "generated_by": "simple",
+  "last_analyzed": "2026-03-03T13:59:22.5237719-05:00",
+  "nodes": [
+    {
+      "id": "root",
+      "label": "process-scheduler",
+      "description": "Project root",
+      "manual": false,
+      "parent": null,
+      "files": []
+    },
+    {
+      "id": "feedback",
+      "label": "feedback",
+      "description": "feedback directory",
+      "manual": false,
+      "parent": "root",
+      "files": []
+    },
+    {
+      "id": "public",
+      "label": "public",
+      "description": "public directory",
+      "manual": false,
+      "parent": "root",
+      "files": []
+    },
+    {
+      "id": "src",
+      "label": "src",
+      "description": "src directory",
+      "manual": false,
+      "parent": "root",
+      "files": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "root",
+      "target": "feedback",
+      "type": "contains",
+      "manual": false
+    },
+    {
+      "source": "root",
+      "target": "public",
+      "type": "contains",
+      "manual": false
+    },
+    {
+      "source": "root",
+      "target": "src",
+      "type": "contains",
+      "manual": false
+    }
+  ]
+}

@@ -119,74 +119,81 @@ class Scheduler extends Component {
     }
 
     render() {
-        const { diskSize, diskPageList, memoryPageList, memorySize } = this.state
+        const { algorithm } = this.state
+        
         return (
             <div>
                 <div className="process-scheduler_info">
                     <div>
-                        Running Algorithm: <span className="process-scheduler_info-algorithm">{this.state.algorithm}</span>
+                        Running Algorithm: <span className="process-scheduler-algorithm">{algorithm}</span>
                     </div>
-                    {this.state.algorithm === 'round-robin' && (
-                        <div>
-                            Page Size: <span className="process-scheduler_info-algorithm">{this.state.pageSize}</span>
+                    
+                    {algorithm === 'round-robin' && (
+                        <>
+                            <div>
+                                Page Size: <span className="process-scheduler-algorithm">{this.state.pageSize}</span>
+                            </div>
+                            <div>
+                                Disk Size: <span className="process-scheduler-algorithm">{this.state.diskSize}</span>
+                            </div>
+                        </>
+                    )}
+                    
+                    <div className="info-note">
+                        <div>PIE = Process In Execution</div>
+                        <div>TET = Total Execution Time</div>
+                        <div>RET = Remaining Execution Time</div>
+                    </div>
+
+                    {algorithm === 'priority-queue' && (
+                        <div className="info-note">
+                            <div>Priorities and Quantums (Q) = (0 = 4 × Q, 1 = 3 × Q, 2 = 2 × Q, 3 = Q)</div>
+                            <div>Quantum Submitted (Initial Q) = {this.state.quantum}s</div>
                         </div>
                     )}
-                    {this.state.algorithm === 'round-robin' && (
-                        <div>
-                            Disk Size: <span className="process-scheduler_info-algorithm">{this.state.diskSize}</span>
-                        </div>
-                    )}
-                    <div>PIE = Process In Execution</div>
-                    <div>TET = Total Execution Time</div>
-                    <div>RET = Remaining Execution Time</div>
-                    {this.state.algorithm === 'priority-queue' ? (
-                        <div>
-                            Priorities and Quantums(Q) = (0 = 4 * Q, 1 = 3*Q, 2 = 2*Q, 3 = Q)
-                            <div>Quantum Submited (Initial Q) = {this.state.quantum}s</div>
-                        </div>
-                    ) : <div></div>}
-                    <button className="add-process-button" onClick={this.handleClick}>Add Random Process</button>
+                    
+                    <button className="add-process-button" onClick={this.handleClick}>
+                        Add Random Process
+                    </button>
                 </div>
 
                 <div className="section-title">Core List</div>
                 <Core cores={this.state.coreList} />
 
                 <div className="section-title">Process List</div>
-                {this.state.algorithm === 'priority-queue'
+                {algorithm === 'priority-queue' 
                     ? <ProcessQueues processes={this.state.processList} />
                     : <Process processes={this.state.processList} />
                 }
 
-                {this.state.algorithm === 'round-robin' && memorySize > 0 && (
+                {algorithm === 'round-robin' && this.state.memorySize > 0 && (
                     <div>
                         <div className="section-title bold">
-                            Memory Pages - Size {memorySize} bytes - Occupied Percentage {getOccupiedPercentageInAllMemoryPages(memoryPageList, memorySize)}% - {getFreeMemoryAVailability(memoryPageList, memorySize)} bytes free
+                            Memory Pages - Size {this.state.memorySize} bytes - Occupied {getOccupiedPercentageInAllMemoryPages(this.state.memoryPageList, this.state.memorySize)}% - {getFreeMemoryAVailability(this.state.memoryPageList, this.state.memorySize)} bytes free
                         </div>
                         <MemoryPageList memoryPages={this.state.memoryPageList} />
                     </div>
                 )}
 
-                {this.state.algorithm === 'round-robin' && diskSize > 0 && (
+                {algorithm === 'round-robin' && this.state.diskSize > 0 && (
                     <div>
                         <div className="section-title bold">
-                            HD Pages - Size {diskSize} bytes - Occupied Percentage {getOccupiedPercentageInAllDiskPages(diskPageList, diskSize)}%
+                            HD Pages - Size {this.state.diskSize} bytes - Occupied {getOccupiedPercentageInAllDiskPages(this.state.diskPageList, this.state.diskSize)}%
                         </div>
                         <Disk diskPages={this.state.diskPageList} />
                     </div>
                 )}
 
-                {this.state.algorithmMemoryManager === 'bestFit' ? (
-                    <div></div>
-                ) : (
+                {this.state.algorithmMemoryManager !== 'bestFit' && (
                     <div>
                         <div className="section-title">Memory</div>
-                        <div className={this.state.algorithm !== 'round-robin' ? 'memory hide' : 'memory'}>
+                        <div className={algorithm !== 'round-robin' ? 'memory hide' : 'memory'}>
                             <Memory memoryBlocks={this.state.memoryBlocksList.length ? this.state.memoryBlocksList : []} />
-                            {this.state.initialMemoryAvailability > 0 ? (
+                            {this.state.initialMemoryAvailability > 0 && (
                                 <div className="memory-initial">
                                     {this.state.initialMemoryAvailability} bytes {this.state.algorithmMemoryManager === 'mergeFit' ? 'super block' : 'not allocated'}
                                 </div>
-                            ) : <div className="hide"></div>}
+                            )}
                         </div>
                     </div>
                 )}
@@ -195,6 +202,7 @@ class Scheduler extends Component {
                     <div className="section-title">Finished Process List</div>
                     <FinishedProcessList processes={this.state.finishedProcessList} />
                 </div>
+                
                 <div>
                     <div className="section-title">Aborted Process List</div>
                     <AbortedProcessList processes={this.state.abortedProcessList} />

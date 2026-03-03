@@ -13,7 +13,7 @@ const Disk = ({diskPages}) => {
 
     return (
         <div className="disk-page_container">
-            { diskPagesList.length ? diskPagesList : <div className="hide">No disk pages available</div> }
+            {diskPagesList.length > 0 && diskPagesList}
         </div>
     )
 };

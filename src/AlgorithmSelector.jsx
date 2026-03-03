@@ -86,57 +86,117 @@ class AlgorithmSelector extends Component {
 
     render() {
         const { algorithmData } = this.context
+        const showQuantum = algorithmData.algorithm === 'round-robin' || algorithmData.algorithm === 'priority-queue'
+        
         return (
             <div className="algorithm-selector">
                 <form onSubmit={this.handleSubmit}>
-                    <div>
-                        <input type="radio" name="algorithm" id="sjf" value="sjf" required onChange={this.handleChange} />
-                        <label htmlFor="sjf">Shortest Job First (SJF)</label>
+                    <div className="form-group">
+                        <div className="radio-group">
+                            <input type="radio" name="algorithm" id="sjf" value="sjf" required onChange={this.handleChange} />
+                            <label htmlFor="sjf">Shortest Job First (SJF)</label>
+                        </div>
+
+                        <div className="radio-group">
+                            <input type="radio" name="algorithm" id="round-robin" value="round-robin" onChange={this.handleChange} />
+                            <label htmlFor="round-robin">Round Robin</label>
+                        </div>
+
+                        <div className="radio-group">
+                            <input type="radio" name="algorithm" id="priority-queue" value="priority-queue" onChange={this.handleChange} />
+                            <label htmlFor="priority-queue">Priority Queue w/ Round Robin</label>
+                        </div>
                     </div>
 
-                    <div>
-                        <input type="radio" name="algorithm" id="round-robin" value="round-robin" onChange={this.handleChange} />
-                        <label htmlFor="round-robin">Round Robin</label>
+                    {showQuantum && (
+                        <div className="form-group">
+                            {algorithmData.algorithm === 'round-robin' && (
+                                <div className="disclaimer">
+                                    This selection contains simulations for Swapping/Pagination algorithms on Virtual Memory/Disk management. (Best Fit)
+                                </div>
+                            )}
+                            <input 
+                                className="algorithm-selector_input" 
+                                type="number" 
+                                name="quantum" 
+                                id="quantum" 
+                                placeholder="Quantum (2-20)" 
+                                min="2" 
+                                max="20" 
+                                onChange={this.handleChange} 
+                                required={showQuantum} 
+                            />
+                        </div>
+                    )}
+
+                    <div className="form-group">
+                        <input 
+                            className="algorithm-selector_input input-field" 
+                            type="number" 
+                            name="core-ammount" 
+                            id="coreAmmount" 
+                            max="64" 
+                            placeholder="Core Amount" 
+                            onChange={this.handleChange} 
+                            required 
+                        />
                     </div>
 
-                    <div>
-                        <input type="radio" name="algorithm" id="priority-queue" value="priority-queue" onChange={this.handleChange} />
-                        <label htmlFor="priority-queue">Priority Queue w/ Round Robin</label>
+                    <div className="form-group">
+                        <input 
+                            className="algorithm-selector_input" 
+                            type="number" 
+                            name="process-ammount" 
+                            id="processAmmount" 
+                            max="200" 
+                            placeholder="Process Amount" 
+                            onChange={this.handleChange} 
+                            required 
+                        />
                     </div>
 
-                    <div className={algorithmData.algorithm === 'round-robin' || algorithmData.algorithm === 'priority-queue' ? '' : 'hide'}>
-                        {algorithmData.algorithm === 'round-robin' ? (
-                            <div className="disclaimer">
-                                This selection contains simulations for Swapping/Pagination algorithms on Virtual Memory/Disk management. (Best Fit)
+                    {algorithmData.algorithm === 'round-robin' && (
+                        <div className="form-group">
+                            <input 
+                                className="algorithm-selector_input input-field" 
+                                type="number" 
+                                name="memoryAmmount" 
+                                id="memoryAmmount" 
+                                placeholder="Memory Amount" 
+                                min="1024" 
+                                onChange={this.handleChange} 
+                                required={algorithmData.algorithm === 'round-robin'} 
+                            />
+                            
+                            <div className="radio-group" style={{ marginTop: '12px' }}>
+                                <input 
+                                    type="radio" 
+                                    name="algorithmMemoryManager" 
+                                    id="bestFit" 
+                                    value="bestFit" 
+                                    required={algorithmData.algorithm === 'round-robin'} 
+                                    onChange={this.handleChange} 
+                                />
+                                <label htmlFor="bestFit">Best Fit</label>
                             </div>
-                        ) : <div></div>}
-
-                        <input className="algorithm-selector_input" type="number" name="quantum" id="quantum" placeholder="Quantum" min="2" max="20" onChange={this.handleChange} required={algorithmData.algorithm === 'round-robin' || algorithmData.algorithm === 'priority-queue'} />
-                    </div>
-
-                    <div>
-                        <input className="algorithm-selector_input input-field" type="number" name="core-ammount" id="coreAmmount" max="64" placeholder="Core Ammount" onChange={this.handleChange} required />
-                    </div>
-
-                    <div>
-                        <input className="algorithm-selector_input" type="number" name="process-ammount" id="processAmmount" max="200" placeholder="Process Ammount" onChange={this.handleChange} required />
-                    </div>
-
-                    <div className={algorithmData.algorithm === 'round-robin' ? '' : 'hide'}>
-                        <div>
-                            <input className="algorithm-selector_input input-field" type="number" name="memoryAmmount" id="memoryAmmount" placeholder="Memory Ammount" min="1024" onChange={this.handleChange} required={algorithmData.algorithm === 'round-robin'} />
+                            
+                            <div className="radio-group">
+                                <input 
+                                    type="radio" 
+                                    name="algorithmMemoryManager" 
+                                    id="mergeFit" 
+                                    value="mergeFit" 
+                                    required={algorithmData.algorithm === 'round-robin'} 
+                                    onChange={this.handleChange} 
+                                />
+                                <label htmlFor="mergeFit">Merge Fit</label>
+                            </div>
                         </div>
-                        <div>
-                            <input type="radio" name="algorithmMemoryManager" id="bestFit" value="bestFit" required={algorithmData.algorithm === 'round-robin'} onChange={this.handleChange} />
-                            <label htmlFor="bestFit">Best Fit</label>
-                        </div>
-                        <div>
-                            <input type="radio" name="algorithmMemoryManager" id="mergeFit" value="mergeFit" required={algorithmData.algorithm === 'round-robin'} onChange={this.handleChange} />
-                            <label htmlFor="mergeFit">Merge Fit</label>
-                        </div>
-                    </div>
+                    )}
 
-                    <button className="algorithm-selector_button-submit" type="submit">Start Scheduler Simulation</button>
+                    <button className="algorithm-selector_button-submit" type="submit">
+                        Start Scheduler Simulation
+                    </button>
                 </form>
             </div>
         )

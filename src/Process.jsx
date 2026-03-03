@@ -3,25 +3,31 @@ import React from 'react';
 const Processes = ({processes}) => {
     const processList = processes.map(process => {
         return (
-            <div className={process.status === 'executing' ? 'process executing': 'process'} key={"p" + process.id}>
-                <div className={process.inserted ? "process_name inserted" : "process_name"}>{"P" + process.id}
-                {process.status === "executing" ? 
-                    (<div className="lds-dual-ring"></div>)
-                    :
-                    (<div></div>)
-                }
+            <div 
+                className={`process ${process.status === 'executing' ? 'executing' : ''}`} 
+                key={"p" + process.id}
+            >
+                <div className={`process_name ${process.inserted ? 'inserted' : ''}`}>
+                    {"P" + process.id}
+                    {process.status === "executing" && (
+                        <div className="lds-dual-ring"></div>
+                    )}
                 </div>
-                <div>Status: {process.status}</div>
-                <div>TET: {process.totalExecutionTime}s</div>
-                <div>RET: {process.remainingExecutionTime}s</div>
-                <div className={process.bytes ? '' : 'hide'}>Size: {process.bytes} bytes</div>
+                <div className="process-detail">Status: {process.status}</div>
+                <div className="process-detail">TET: {process.totalExecutionTime}s</div>
+                <div className="process-detail">RET: {process.remainingExecutionTime}s</div>
+                {process.bytes && (
+                    <div className="process-detail">Size: {process.bytes} bytes</div>
+                )}
             </div>
         )
     });
 
     return (
         <div className="process-list">
-            { processList.length ? processList : <div className="process-list_no-process">No Process left to execute!</div>}
+            {processList.length > 0 ? processList : (
+                <div className="process-list_no-process">No Process left to execute!</div>
+            )}
         </div>
     )
 }

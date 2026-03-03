@@ -4,20 +4,23 @@ const Memory = ({memoryBlocks}) => {
     const memoryBlocksList = memoryBlocks.map(memoryBlock => {
         if (memoryBlock.size) {
             return (
-                <div className={memoryBlock.type === 'free' ? 'memory-block free' : 'memory-block busy'} key={"memoryblock"+memoryBlock.id}>
-                    <div>Block ID: {memoryBlock.id }</div>
-                    <div>Block PID: {memoryBlock.type === 'free' ? 'free' : 'P' + memoryBlock.pid }</div>
-                    <div>Size: { memoryBlock.size } bytes</div>
-                    <div>Request Size: { memoryBlock.reqsize } bytes</div>
+                <div 
+                    className={`memory-block ${memoryBlock.type === 'free' ? 'free' : 'busy'}`} 
+                    key={"memoryblock" + memoryBlock.id}
+                >
+                    <div className="block-detail">Block ID: {memoryBlock.id}</div>
+                    <div className="block-detail">Block PID: {memoryBlock.type === 'free' ? 'free' : 'P' + memoryBlock.pid}</div>
+                    <div className="block-detail">Size: {memoryBlock.size} bytes</div>
+                    <div className="block-detail">Request Size: {memoryBlock.reqsize} bytes</div>
                 </div>
             )
         }
-        return false
+        return null
     });
 
     return (
         <div className="memory-block_container">
-            { memoryBlocksList.length ? memoryBlocksList : <div className="hide">No memory</div> }
+            {memoryBlocksList.length > 0 && memoryBlocksList}
         </div>
     )
 };

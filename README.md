@@ -6,6 +6,29 @@ A web-based simulator that visualizes how operating systems manage processes acr
 
 In an operating system, dozens or hundreds of processes compete for limited CPU time. The **process scheduler** decides which process runs next, for how long, and on which core. Different algorithms make different trade-offs between fairness, throughput, and response time. This simulator lets you watch those trade-offs play out visually.
 
+## What is Quantum?
+
+In the context of this simulator, **quantum** (also called a *time slice*) is the fixed amount of time each process is allowed to run on a CPU core before being preempted.
+
+When you set a quantum of, for example, **5 seconds**:
+1. A process starts executing on a core
+2. After 5 seconds, the quantum expires
+3. The process is moved back to the ready queue
+4. The next ready process gets to run for its quantum
+5. After all other processes have had their turn, the original process runs again (round-robin)
+
+**Why does it matter?**
+- **Shorter quantum** → More responsive, fairer to short processes, but more context-switching overhead
+- **Longer quantum** → Less overhead, but short processes may wait longer
+
+In **Priority Queue** mode, the quantum is multiplied by priority:
+- Priority 0 → 4 × quantum (e.g., 4 × 5s = 20s)
+- Priority 1 → 3 × quantum (e.g., 3 × 5s = 15s)
+- Priority 2 → 2 × quantum (e.g., 2 × 5s = 10s)
+- Priority 3 → 1 × quantum (e.g., 1 × 5s = 5s)
+
+This means higher-priority processes get more CPU time before being preempted.
+
 ## Scheduling Algorithms
 
 ### Shortest Job First (SJF)
